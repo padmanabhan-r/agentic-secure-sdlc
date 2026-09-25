@@ -9,8 +9,6 @@ should judge the requirement, not the discussion around it.
 """
 import os
 import sys
-from typing import Literal
-
 import requests
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -21,44 +19,13 @@ GITHUB_API = "https://api.github.com"
 
 
 class Criterion(BaseModel):
-    category: Literal[
-        "authorization",
-        "segregation-of-duties",
-        "integrity",
-        "audit",
-        "pii-and-data",
-        "abuse-and-limits",
-        "authentication",
-        "other",
-    ]
-    criterion: str = Field(description="Testable acceptance criterion, one sentence.")
-    why: str = Field(description="The concrete attack or failure it prevents, one sentence.")
-
-
-class Threat(BaseModel):
-    stride: Literal[
-        "Spoofing",
-        "Tampering",
-        "Repudiation",
-        "Information disclosure",
-        "Denial of service",
-        "Elevation of privilege",
-    ]
-    threat: str
-    mitigation: str
-
-
-class DataItem(BaseModel):
-    field: str
-    sensitivity: Literal["public", "internal", "confidential", "pii", "financial"]
+    rule: str = Field(description="What the software must do, in plain words a manager understands. One short sentence.")
+    stops: str = Field(description="The abuse it stops, as a short example. One short sentence.")
 
 
 class Review(BaseModel):
-    summary: str = Field(description="Two sentences: what the feature exposes and the main risk.")
-    data: list[DataItem]
-    criteria: list[Criterion]
-    threats: list[Threat]
-    questions_for_pm: list[str]
+    criteria: list[Criterion] = Field(description="The 5 most important, most important first.")
+    questions_for_pm: list[str] = Field(description="The 3 most important open questions, one line each.")
 
 
 SYSTEM = """You are a product security engineer at a fintech SaaS company that handles
@@ -76,7 +43,8 @@ Rules:
 - Business rules create data. If the requirement implies storing documents or personal or
   financial data, say what must be protected.
 - Only raise what this requirement touches. Put anything you cannot decide from the text
-  in questions_for_pm."""
+  in questions_for_pm.
+- Be brief. Exactly 5 criteria and 3 questions. Plain words, no jargon, no category labels."""
 
 
 def gh(method: str, path: str, **kwargs):
@@ -113,29 +81,16 @@ def review(title: str, body: str) -> Review:
 def render(r: Review) -> str:
     lines = [
         MARKER,
-        "## Security requirements review (advisory)",
+        "## Security review (advisory)",
         "",
-        r.summary,
-        "",
-        "### Data this feature touches",
-        "| Field | Sensitivity |",
-        "|---|---|",
-        *[f"| {d.field} | {d.sensitivity} |" for d in r.data],
-        "",
-        "### Security acceptance criteria",
-        "| # | Category | Criterion | Why |",
-        "|---|---|---|---|",
-        *[f"| S{i} | {c.category} | {c.criterion} | {c.why} |" for i, c in enumerate(r.criteria, 1)],
-        "",
-        "### Threat model (STRIDE)",
-        "| STRIDE | Threat | Mitigation |",
+        "| # | The software must... | Stops this abuse |",
         "|---|---|---|",
-        *[f"| {t.stride} | {t.threat} | {t.mitigation} |" for t in r.threats],
+        *[f"| {i} | {c.rule} | {c.stops} |" for i, c in enumerate(r.criteria[:5], 1)],
         "",
-        "### Questions for the PM",
-        *[f"- {q}" for q in r.questions_for_pm],
+        "**Questions for the PM**",
+        *[f"- {q}" for q in r.questions_for_pm[:3]],
         "",
-        f"<sub>Model `{MODEL}`. Advisory only: a human accepts, edits or rejects these criteria.</sub>",
+        f"<sub>`{MODEL}` · advisory: a human accepts or edits these.</sub>",
     ]
     return "\n".join(lines)
 
