@@ -1,16 +1,10 @@
 # secure-sdlc-agent-lab
 
-A hands-on lab for an **agentic security workflow across the SDLC**: scanners, a product security
-context model, an LLM security agent, deterministic release gates, guardrails, and evals, running in
-GitHub Actions (then CircleCI) with Datadog.
+A hands-on lab for an **agentic security workflow across the SDLC**, built one stage at a time and
+following the order a feature takes: requirement, design, code, CI, release, production.
 
-`app/` is a small account-linking service for payouts. **It is intentionally vulnerable.** It exists
-to be protected by the workflow. Never deploy it.
+The lab starts at the beginning: one product requirement, filed as a GitHub issue. No code yet.
 
-## Run
-```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-pytest -q
-uvicorn app.main:app --reload
-```
+| Stage | SDLC step | Status |
+|---|---|---|
+| 1 | Requirement → security acceptance criteria + threat model | in progress |
