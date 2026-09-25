@@ -1,0 +1,34 @@
+name: Security requirements review
+
+# Runs only when someone with write access adds the label. Comments never trigger it:
+# anyone could comment, which would let them spend the LLM budget or inject instructions.
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: requirements-review-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: github.event.label.name == 'needs-security-review'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r agents/requirements.txt
+      - name: Review the requirement
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          AGENT_ENABLED: ${{ vars.AGENT_ENABLED }}
+        run: python agents/requirements_agent.py
