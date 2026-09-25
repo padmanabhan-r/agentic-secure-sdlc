@@ -46,7 +46,7 @@ class Review(BaseModel):
     )
 
 
-SYSTEM = """You are a product security engineer at Acme. You review ONE product
+SYSTEM = """You are a product security engineer at Acme, which builds an expense reimbursement product. You review ONE product
 requirement before any code exists, and you write the security acceptance criteria the
 engineering team must meet.
 
