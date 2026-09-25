@@ -1,0 +1,37 @@
+# Product security context model: expense reimbursement.
+#
+# What security knows about this product, written down once so every agent uses the
+# same facts. Owned by the security reviewers; changes go through a reviewed PR.
+
+product: expense-reimbursement
+description: Employees of customer companies submit expense claims; their managers approve them; approved claims are reimbursed.
+
+# 1 = money moves or personal data is exposed. Tier 1 needs a security reviewer's sign-off.
+release_tier: 1
+
+data:
+  claim_amount: financial
+  merchant: internal
+  receipts_and_payment_proof: pii        # bank statements and UPI screenshots show account numbers and other people's transactions
+  bank_account_for_reimbursement: [pii, financial]
+  manager_comment: internal
+
+roles:
+  employee: submits and views their own claims only
+  manager: approves or rejects claims of their direct reports only
+  second_approver: approves claims above the limit, after the manager
+  finance: views all claims and triggers reimbursement
+
+rules:
+  - Nobody approves or rejects their own claim.
+  - Managers act only on claims from their direct reports, checked on the server for every request.
+  - A claim above 1,000 USD needs the manager and a second approver before reimbursement.
+  - Every approve, reject and resubmit is audited: who, when, what changed. The audit record cannot be edited.
+  - A rejected claim can be resubmitted with new proof, and goes back to the start of approval.
+  - Once approved, a claim's amount, receipts and payment proof cannot change.
+
+logging:
+  never_log: [bank_account_for_reimbursement, receipts_and_payment_proof]
+
+critical_flows:
+  - approve claim -> reimbursement payout
