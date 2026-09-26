@@ -137,6 +137,12 @@ def add_label(repo: str, number: int, name: str):
     gh("POST", f"/repos/{repo}/issues/{number}/labels", json={"labels": [name]})
 
 
+def can_write(repo: str, user: str) -> bool:
+    """True if the user has write access. On a public repo, anyone can edit an issue they opened."""
+    perm = gh("GET", f"/repos/{repo}/collaborators/{user}/permission")["permission"]
+    return perm in ("admin", "maintain", "write")
+
+
 def run_review(repo: str, issue: dict):
     post_review(repo, issue["number"], render(review(issue["title"], issue["body"] or "")))
     print(f"Posted review on #{issue['number']}")
@@ -169,13 +175,23 @@ def handle(event_name: str, event: dict, repo: str):
             comment(repo, number, f"Security approved by @{actor}. Any change to this requirement resets the approval.")
 
     elif event["action"] == "edited" and "body" in event.get("changes", {}):
+        if APPROVED not in labels and NEEDS_REVIEW not in labels:
+            return
+        # Any change resets approval, whoever made it: failing safe costs nothing.
         if APPROVED in labels:
             remove_label(repo, number, APPROVED)
             add_label(repo, number, NEEDS_REVIEW)
             comment(repo, number, f"The requirement changed after approval (edited by @{actor}), so the security approval is reset.")
+        # Only a collaborator's edit spends the LLM budget and puts new text in front of the agent.
+        if can_write(repo, actor):
             run_review(repo, issue)
-        elif NEEDS_REVIEW in labels:
-            run_review(repo, issue)
+        else:
+            comment(
+                repo,
+                number,
+                f"@{actor} edited the requirement but is not a collaborator, so the agent did not re-run. "
+                f"A collaborator can re-add `{NEEDS_REVIEW}` after checking the change.",
+            )
 
 
 def main():

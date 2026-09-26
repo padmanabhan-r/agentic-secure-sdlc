@@ -1,4 +1,4 @@
-# secure-sdlc-agent-lab
+# agentic-secure-sdlc
 
 A hands-on lab for an **agentic security workflow across the SDLC**, built one stage at a time and
 following the order a feature takes: requirement, design, code, CI, release, production.
@@ -27,6 +27,7 @@ expense claims, their managers approve them, and approved claims are reimbursed.
 | Security reviewer adds `security-approved` | Approved. Development may start; the agent stops. |
 | Anyone else adds `security-approved` | The label is removed again |
 | Issue body edited after approval | Approval is reset and the agent re-drafts |
+| Issue body edited by a non-collaborator | Approval is still reset, but the agent does not re-run until a collaborator re-adds `needs-security-review` |
 
 Comments never trigger the agent, and it never reads them.
 
@@ -42,5 +43,5 @@ Comments never trigger the agent, and it never reads them.
 
 | Stage | SDLC step | Status |
 |---|---|---|
-| 1 | Requirement → security acceptance criteria, using the context model | done: issue #2 |
+| 1 | Requirement → security acceptance criteria, using the context model | done: issue #1 |
 | 2 | Code → the feature is built from the approved requirement | next |
