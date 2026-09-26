@@ -5,7 +5,7 @@
 ## What we are building
 
 A manager opens the approvals page, sees pending claims from their direct reports, and approves or
-rejects each one. Claims over 1,000 USD then go to a second approver. Approved claims go to the payout
+rejects each one. Claims over ₹50,000 then go to a second approver. Approved claims go to the payout
 service, which pays the employee.
 
 ## Components
@@ -59,7 +59,7 @@ flowchart LR
 ## Key decisions
 
 1. **Every rule is checked in C2, on the server,** for every request: direct reports only, no
-   self-approval, pending status only, the 1,000 USD second-approver rule. The web app only hides buttons.
+   self-approval, pending status only, the ₹50,000 second-approver rule. The web app only hides buttons.
 2. **The caller's identity comes from the session token, never from the request body.** C2 ignores
    any user ID the browser sends.
 3. **Receipts are never served through C2.** C2 hands out a link only to someone allowed to see that
