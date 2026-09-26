@@ -86,20 +86,53 @@ def pr_inputs(repo: str, number: int) -> tuple[str, str, list[str]]:
     return requirement, design, paths
 
 
-def threat_model(requirement: str, design: str) -> ThreatModel:
-    response = OpenAI().responses.parse(
-        model=MODEL,
-        input=[
-            {"role": "system", "content": SYSTEM},
-            {"role": "system", "content": f"<context_model>\n{CONTEXT_MODEL.read_text()}\n</context_model>"},
-            {"role": "user", "content": f"<requirement>\n{requirement}\n</requirement>\n<design>{design}</design>"},
-        ],
-        text_format=ThreatModel,
+def boundary_flows(design: str) -> list[str]:
+    """Flows the design marks as crossing a trust boundary: table rows like `| F2 | ... | **Yes**`."""
+    return sorted(set(re.findall(r"^\|\s*(F\d+)\s*\|.*\*\*Yes\*\*", design, flags=re.M)), key=lambda f: int(f[1:]))
+
+
+def history(repo: str, number: int) -> str:
+    """The previous threat model and the security reviewers' comments on this PR.
+
+    Only reviewers' comments are passed on: they are collaborators whose decisions the
+    next revision must respect. Nobody else's comments reach the model.
+    """
+    reviewers = {r.strip() for r in os.environ.get("SECURITY_REVIEWERS", "").split(",") if r.strip()}
+    comments = gh("GET", f"/repos/{repo}/issues/{number}/comments", params={"per_page": 100})
+    previous = next((c["body"] for c in comments if MARKER in c["body"]), "")
+    decisions = [f"@{c['user']['login']}: {c['body']}" for c in comments if c["user"]["login"] in reviewers]
+    if not previous and not decisions:
+        return ""
+    return (
+        f"<previous_threat_model>\n{previous}\n</previous_threat_model>\n"
+        f"<reviewer_decisions>\n" + "\n---\n".join(decisions) + "\n</reviewer_decisions>"
     )
-    return response.output_parsed
 
 
-def render(tm: ThreatModel, paths: list[str]) -> str:
+def threat_model(requirement: str, design: str, past: str = "") -> tuple[ThreatModel, list[str]]:
+    """Draft the threat model, then check in code that every boundary flow was analysed.
+
+    If the model skipped a flow, it gets one retry naming the missing flows. Anything
+    still missing is returned, so the comment says so instead of hiding it.
+    """
+    required = boundary_flows(design)
+    extra = f"\n{past}\nKeep threats the reviewer accepted, drop ones they rejected, and re-check every flow." if past else ""
+    messages = [
+        {"role": "system", "content": SYSTEM},
+        {"role": "system", "content": f"<context_model>\n{CONTEXT_MODEL.read_text()}\n</context_model>"},
+        {"role": "user", "content": f"<requirement>\n{requirement}\n</requirement>\n<design>{design}</design>{extra}\n"
+                                    f"Analyse every one of these boundary-crossing flows: {', '.join(required)}."},
+    ]
+    for _ in range(2):
+        tm = OpenAI().responses.parse(model=MODEL, input=messages, text_format=ThreatModel).output_parsed
+        missing = [f for f in required if f not in {t.flow for t in tm.threats}]
+        if not missing:
+            return tm, []
+        messages.append({"role": "user", "content": f"You skipped {', '.join(missing)}. Add at least one real threat for each."})
+    return tm, missing
+
+
+def render(tm: ThreatModel, paths: list[str], missing: list[str] | None = None) -> str:
     rows = sorted(tm.threats, key=lambda t: (t.flow, "STRIDE".index(t.stride)))
     open_count = sum(not t.covered for t in rows)
     lines = [
@@ -112,6 +145,8 @@ def render(tm: ThreatModel, paths: list[str]) -> str:
         "|---|---|---|---|---|",
         *[f"| {t.flow} | {t.stride} · {LETTER[t.stride]} | {t.threat} | {t.fix} | {'✅' if t.covered else '❌'} |" for t in rows],
     ]
+    if missing:
+        lines += ["", f"⚠️ **Not analysed: {', '.join(missing)}.** These flows cross a trust boundary; the reviewer must check them by hand."]
     if tm.design_changes:
         lines += ["", "**Change the design before coding**", *[f"- {c}" for c in tm.design_changes[:3]]]
     lines += ["", f"<sub>`{MODEL}` · advisory: a security reviewer comments, then adds `{APPROVED}`.</sub>"]
@@ -142,7 +177,8 @@ def run(repo: str, number: int, reason: str):
     if not paths:
         comment(repo, number, f"No design doc under `docs/design/` in this PR, so there is nothing to threat-model.")
         return
-    post(repo, number, render(threat_model(requirement, design), paths), reason)
+    tm, missing = threat_model(requirement, design, history(repo, number))
+    post(repo, number, render(tm, paths, missing), reason)
     print(f"Posted threat model on #{number}")
 
 
@@ -225,8 +261,11 @@ def main():
         return
     repo = os.environ["GITHUB_REPOSITORY"]
     if "--dry-run" in sys.argv:
-        requirement, design, paths = pr_inputs(repo, int(os.environ["PR_NUMBER"]))
-        print(render(threat_model(requirement, design), paths))
+        number = int(os.environ["PR_NUMBER"])
+        requirement, design, paths = pr_inputs(repo, number)
+        print("boundary flows:", boundary_flows(design))
+        tm, missing = threat_model(requirement, design, history(repo, number))
+        print(render(tm, paths, missing))
         return
     handle(json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text()), repo)
 
