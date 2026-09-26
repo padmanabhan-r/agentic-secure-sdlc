@@ -14,6 +14,7 @@ expense claims, their managers approve them, and approved claims are reimbursed.
 |---|---|---|
 | Repo owner and **security reviewer** | `padmanabhan-r` | Owns the security context model. Reviews the agent's criteria and signs off by adding `security-approved`. The only account allowed to approve (repo variable `SECURITY_REVIEWERS`). |
 | **Product Manager** | `paddy-codes` | Writes requirements as GitHub issues, answers questions by editing the issue body, and adds `needs-security-review` to ask for a review. |
+| **Tech lead** | `paddy-codes` | Gives the engineering approval on design and code PRs: does it work, is it maintainable. (The lab has two accounts, so paddy-codes plays both PM and tech lead.) |
 | **Security agent** | `github-actions[bot]` | Reads the requirement and the context model and posts advisory security criteria. Never approves anything. |
 | **Engineer** | `padmanabhan-r` | Writes the design and, later, the code, as pull requests. In a real team this is a different person from the security reviewer; in the lab one account plays both, and never approves its own work. |
 | Employee and Manager | test data | The product's users, at the customer company. They appear as sample users once there is code. |
