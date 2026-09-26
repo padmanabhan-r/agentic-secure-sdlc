@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install requests==2.32.*
+      - run: pip install requests==2.33.*
       - name: Are the requirement and design approved?
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

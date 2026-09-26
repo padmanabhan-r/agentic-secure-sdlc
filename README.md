@@ -163,7 +163,37 @@ flowchart TD
 If a requirement's approval is reset after the PR opened, the requirements flow re-checks every open PR
 that closes it, and the gate turns red again. Code can be written any time; it cannot ship early.
 
-**Status:** the gate is built. Next: the engineer builds the Rupi-yeah app.
+**Status:** the gate is built, and the app's PR #5 passes it.
+
+## Stage 4: the PR security gate
+
+Before code reaches `main`, every security feature in the design must be proven in the code. The gate
+checks in layers, cheapest and most certain first; the LLM comes last.
+
+```mermaid
+flowchart LR
+    PR["👩‍💻 Code PR"] --> A["🔍 SAST<br/>Semgrep + our<br/>design rules"]
+    PR --> B["🔑 Secrets<br/>Gitleaks"]
+    PR --> C["📦 Dependencies<br/>npm audit, pip-audit"]
+    PR --> D["🏗️ Build<br/>types, lint, build"]
+    PR --> E["🧪 Security tests<br/>one per design decision"]
+    PR --> F["🤖 Design conformance<br/>agent + Jev"]
+    A & B & C & D & E & F --> G{"All green?"}
+    G -->|yes| H["👍 Tech lead approves → merge"]
+    G -->|no| I["⛔ Merge blocked"]
+```
+
+| # | Check (required on `main`) | What it proves | Status |
+|---|---|---|---|
+| 1 | `sast` | No injection or unsafe patterns. Includes **our own rules written from the design**: every server action checks the CSRF token, identity never comes from the request, no HTML from data, cookies use the secure options (`security/semgrep/rupi-yeah.yml`). | ✅ built |
+| 2 | `secrets` | No keys or tokens in any commit of the PR | ✅ built |
+| 3 | `dependencies` | No known-vulnerable packages. It found one on day one: `requests` 2.32.5 (PYSEC-2026-2275), now 2.33. | ✅ built |
+| 4 | `build` | Types, lint and production build pass | ✅ built |
+| 5 | security tests | Each design decision as a test that fails if the code stops enforcing it | next |
+| 6 | API checks | Every endpoint identifies the caller, rejects bad input, leaks nothing | next |
+| 7 | design conformance | An agent with tools finds the code that enforces each design decision; Jev judges it | next |
+
+This workflow runs the PR's own code, so it uses `pull_request` with a read-only token and no secrets.
 
 ## What is where
 
@@ -176,9 +206,11 @@ that closes it, and the gate turns red again. Code can be written any time; it c
 | `agents/threat_model_agent.py` | The threat-model step and its flow |
 | `.github/workflows/threat-model.yml` | Runs it on design PR events |
 | `agents/gate.py`, `.github/workflows/build-gate.yml` | The Stage 3 build gate |
+| `.github/workflows/pr-security.yml`, `security/semgrep/` | The Stage 4 PR security gate |
+| `rupi-yeah/` | The Rupi-yeah app (Next.js), with its `PRODUCT.md` and `DESIGN.md` |
 | Repo secrets | `OPENAI_API_KEY` (threats and criteria), `OPENROUTER_API_KEY` (Jev) |
 | Repo variables | `SECURITY_REVIEWERS` (who may approve), `AGENT_ENABLED` (kill switch) |
-| Ruleset "main: security gates" | Required checks `security/threat-model` and `security/build-gate`, plus 1 approving review |
+| Ruleset "main: security gates" | Required checks `security/threat-model`, `security/build-gate`, `sast`, `secrets`, `dependencies`, `build`, plus 1 approving review |
 
 ## Stages
 
@@ -186,5 +218,5 @@ that closes it, and the gate turns red again. Code can be written any time; it c
 |---|---|---|
 | 1 | Requirement → security acceptance criteria, using the context model | ✅ done: issue #2 |
 | 2 | Design → threat model (STRIDE + Jev) | ✅ done: PR #3 |
-| 3 | Code → build gate ✅ built; the Rupi-yeah app (Next.js) | 🔨 in progress |
-| 4 | PR security agent: the first real agent, with tools | later |
+| 3 | Code → build gate; the Rupi-yeah app (Next.js) | ✅ built: app in PR #5 |
+| 4 | PR security gate: SAST, secrets, dependencies, build, security tests, design-conformance agent | 🔨 layers 1–4 done |
