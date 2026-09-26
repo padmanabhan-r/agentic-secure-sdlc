@@ -12,7 +12,7 @@ following the order a feature takes: requirement, design, code, CI, release, pro
 | **Stage 2: threat model** | An LLM writes STRIDE threats for every boundary-crossing flow in the design; **Jev** judges whether each fix is already in the design. A human reviewer signs off. | threat modeling, validate agent outputs |
 | **Label-driven flow** | Labels trigger each step; only collaborators can add them; comments never trigger anything. | human-review points, escalation |
 | **Sign-off rules** | Approval labels only count from a listed security reviewer who has commented on the latest review. Any change resets approval. | decision rules, release governance |
-| **Merge gate** | A ruleset on `main` blocks a design PR until the threat model is approved and the tech lead has approved the PR. | release gates |
+| **Merge gates** | A ruleset on `main`: a design PR needs its threat model approved; a code PR needs its requirement and design approved; every PR needs the tech lead's approval. | release gates |
 | **Guardrails** | Least-privilege tokens, untrusted input treated as data, PR code never run, kill switch (`AGENT_ENABLED=false`), model pinned, every revision kept. | least privilege, prompt-injection handling, kill switch, audit |
 | **Checks on the model** | Code verifies every boundary flow was analysed; the model that writes threats never grades them. | evaluation, false-positive tuning |
 
@@ -136,6 +136,35 @@ history is on record.
 (two items accepted as risk for v1, to fix before general availability), approved by the tech lead,
 merged. The design is on `main`.
 
+## Stage 3: code → build gate
+
+Development means product code under `rupi-yeah/`. It can only reach `main` once its requirement and its
+design have both been approved.
+
+```mermaid
+flowchart TD
+    A["👩‍💻 Engineer opens a code PR<br/>'Closes #2'"] --> B{"🚦 Build gate"}
+    B -->|"requirement not 🟢<br/>or design not approved"| C["⛔ Merge blocked"]
+    B -->|"requirement 🟢 + design merged<br/>with 🟢 threat-model-approved"| D["👍 Tech lead approves"]
+    D --> E["✅ Merged"]
+    F["📝 Requirement edited later:<br/>approval resets"] -.->|"gate re-checked:<br/>turns red"| B
+```
+
+**The gate is code, not an LLM.** It sets the required status check `security/build-gate`:
+
+| The PR... | Gate |
+|---|---|
+| changes nothing under `rupi-yeah/` | ✅ not development |
+| changes product code but has no "Closes #N" | ⛔ link the requirement |
+| closes a requirement without 🟢 `security-approved` | ⛔ |
+| closes a requirement with no merged, 🟢 `threat-model-approved` design ("Refs #N") | ⛔ |
+| everything approved | ✅ |
+
+If a requirement's approval is reset after the PR opened, the requirements flow re-checks every open PR
+that closes it, and the gate turns red again. Code can be written any time; it cannot ship early.
+
+**Status:** the gate is built. Next: the engineer builds the Rupi-yeah app.
+
 ## What is where
 
 | Path | What it is |
@@ -146,9 +175,10 @@ merged. The design is on `main`.
 | `docs/design/` | Designs, one per feature. Input to the threat model. |
 | `agents/threat_model_agent.py` | The threat-model step and its flow |
 | `.github/workflows/threat-model.yml` | Runs it on design PR events |
+| `agents/gate.py`, `.github/workflows/build-gate.yml` | The Stage 3 build gate |
 | Repo secrets | `OPENAI_API_KEY` (threats and criteria), `OPENROUTER_API_KEY` (Jev) |
 | Repo variables | `SECURITY_REVIEWERS` (who may approve), `AGENT_ENABLED` (kill switch) |
-| Ruleset "main: security gates" | Required check `security/threat-model` plus 1 approving review |
+| Ruleset "main: security gates" | Required checks `security/threat-model` and `security/build-gate`, plus 1 approving review |
 
 ## Stages
 
@@ -156,5 +186,5 @@ merged. The design is on `main`.
 |---|---|---|
 | 1 | Requirement → security acceptance criteria, using the context model | ✅ done: issue #2 |
 | 2 | Design → threat model (STRIDE + Jev) | ✅ done: PR #3 |
-| 3 | Code → the Rupi-yeah app (API + UI); build gate: a code PR merges only if its requirement and design are approved | next |
+| 3 | Code → build gate ✅ built; the Rupi-yeah app (Next.js) | 🔨 in progress |
 | 4 | PR security agent: the first real agent, with tools | later |
