@@ -4,23 +4,24 @@ name: Threat model
 # the PR's code is never checked out or run: the design doc is read through the API as data.
 on:
   pull_request_target:
-    types: [labeled, synchronize]
+    types: [opened, reopened, labeled, unlabeled, synchronize]
 
 permissions:
   contents: read
   issues: write
   pull-requests: write
+  statuses: write
+
+# The status check `security/threat-model` is red on a design PR until a security reviewer
+# approves it. A ruleset on main requires it, so a red check blocks the merge.
 
 concurrency:
   group: threat-model-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  cancel-in-progress: false   # queue, so a label change never cuts a threat model short
 
 jobs:
   threat-model:
-    if: >-
-      (github.event.action == 'labeled' &&
-        (github.event.label.name == 'needs-threat-model' || github.event.label.name == 'threat-model-approved')) ||
-      github.event.action == 'synchronize'
+    # Runs on every PR, so the required status is always reported.
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

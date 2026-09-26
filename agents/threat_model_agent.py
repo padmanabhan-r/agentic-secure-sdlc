@@ -146,7 +146,36 @@ def run(repo: str, number: int, reason: str):
     print(f"Posted threat model on #{number}")
 
 
+STATUS = "security/threat-model"
+
+
+def set_status(repo: str, number: int):
+    """Red until the threat model is approved. A ruleset on main requires this check.
+
+    Reads the PR fresh, because this flow's own label changes are not in the event payload.
+    PRs without a design doc pass: there is nothing to threat-model.
+    """
+    pr = gh("GET", f"/repos/{repo}/pulls/{number}")
+    files = gh("GET", f"/repos/{repo}/pulls/{number}/files", params={"per_page": 100})
+    labels = {l["name"] for l in pr["labels"]}
+    if not any(f["filename"].startswith("docs/design/") for f in files):
+        state, text = "success", "No design doc in this PR"
+    elif APPROVED in labels:
+        state, text = "success", "Threat model approved by a security reviewer"
+    else:
+        state, text = "failure", f"Waiting for {APPROVED}"
+    gh("POST", f"/repos/{repo}/statuses/{pr['head']['sha']}", json={"state": state, "context": STATUS, "description": text})
+    print(f"Status {STATUS}: {state} ({text})")
+
+
 def handle(event: dict, repo: str):
+    try:
+        _handle(event, repo)
+    finally:
+        set_status(repo, event["pull_request"]["number"])
+
+
+def _handle(event: dict, repo: str):
     pr = event["pull_request"]
     number = pr["number"]
     labels = {l["name"] for l in pr["labels"]}
