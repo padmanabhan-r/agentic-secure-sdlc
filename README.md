@@ -3,6 +3,19 @@
 A hands-on lab for an **agentic security workflow across the SDLC**, built one stage at a time and
 following the order a feature takes: requirement, design, code, CI, release, production.
 
+## What is built so far
+
+| Built | What it does | JD line |
+|---|---|---|
+| **Security context model** | One YAML file of the product's security facts: data sensitivity, roles, rules, limits. Every step reads it. | "Own the product security context model" |
+| **Stage 1: requirement review** | An LLM step turns a requirement (GitHub issue) into security acceptance criteria. A human reviewer signs off. | requirements, human-review requirements |
+| **Stage 2: threat model** | An LLM writes STRIDE threats for every boundary-crossing flow in the design; **Jev** judges whether each fix is already in the design. A human reviewer signs off. | threat modeling, validate agent outputs |
+| **Label-driven flow** | Labels trigger each step; only collaborators can add them; comments never trigger anything. | human-review points, escalation |
+| **Sign-off rules** | Approval labels only count from a listed security reviewer who has commented on the latest review. Any change resets approval. | decision rules, release governance |
+| **Merge gate** | A ruleset on `main` blocks a design PR until the threat model is approved and the tech lead has approved the PR. | release gates |
+| **Guardrails** | Least-privilege tokens, untrusted input treated as data, PR code never run, kill switch (`AGENT_ENABLED=false`), model pinned, every revision kept. | least privilege, prompt-injection handling, kill switch, audit |
+| **Checks on the model** | Code verifies every boundary flow was analysed; the model that writes threats never grades them. | evaluation, false-positive tuning |
+
 ## The scenario
 
 **Rupi-yeah** is an **expense reimbursement app** that other companies use: their employees submit
@@ -116,7 +129,11 @@ rather than hiding it. Each revision also gets the previous threat model and the
 
 The repo admin can bypass the ruleset. GitHub logs every bypass.
 
-**Status:** design PR #3 is open and the threat-model step is built. Next: the engineer adds 🔴 to PR #3.
+Every re-run posts a new revision at the bottom of the PR. Older revisions stay, collapsed, so the whole
+history is on record.
+
+**Status:** design PR #3 has its threat model (Revision 5, all ✅). Next: the security reviewer comments
+and adds 🟢, the tech lead approves, and the PR merges.
 
 ## What is where
 
@@ -128,12 +145,15 @@ The repo admin can bypass the ruleset. GitHub logs every bypass.
 | `docs/design/` | Designs, one per feature. Input to the threat model. |
 | `agents/threat_model_agent.py` | The threat-model step and its flow |
 | `.github/workflows/threat-model.yml` | Runs it on design PR events |
+| Repo secrets | `OPENAI_API_KEY` (threats and criteria), `OPENROUTER_API_KEY` (Jev) |
+| Repo variables | `SECURITY_REVIEWERS` (who may approve), `AGENT_ENABLED` (kill switch) |
+| Ruleset "main: security gates" | Required check `security/threat-model` plus 1 approving review |
 
 ## Stages
 
 | Stage | SDLC step | Status |
 |---|---|---|
 | 1 | Requirement → security acceptance criteria, using the context model | ✅ done: issue #2 |
-| 2 | Design → threat model (STRIDE) | 🔨 in progress: design PR open |
-| 3 | Code → build gate: a PR merges only if its requirement is approved | next |
+| 2 | Design → threat model (STRIDE + Jev) | 🔨 almost done: PR #3 waiting for sign-off and merge |
+| 3 | Code → the Rupi-yeah app (API + UI); build gate: a code PR merges only if its requirement and design are approved | next |
 | 4 | PR security agent: the first real agent, with tools | later |
