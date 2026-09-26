@@ -202,15 +202,28 @@ def render(tm: ThreatModel, paths: list[str], missing: list[str] | None = None, 
     return "\n".join(lines)
 
 
+def archive(repo: str, old: dict, revision: int):
+    """Collapse a superseded review instead of deleting it, so every revision stays on record.
+
+    The marker is removed, so only the newest review counts as current.
+    """
+    body = old["body"].replace(MARKER, "").strip()
+    gh(
+        "PATCH",
+        f"/repos/{repo}/issues/comments/{old['id']}",
+        json={"body": f"<details><summary>🗄️ Revision {revision} (superseded)</summary>\n\n{body}\n\n</details>"},
+    )
+
+
 def post(repo: str, number: int, text: str, reason: str):
-    """Keep one threat model, always the newest comment, with a revision number."""
+    """Post the new threat model at the bottom; collapse the previous one above it."""
     comments = gh("GET", f"/repos/{repo}/issues/{number}/comments", params={"per_page": 100})
     mine = next((c for c in comments if MARKER in c["body"]), None)
     revision = 1
     if mine:
         found = re.search(r"Revision (\d+)", mine["body"])
         revision = int(found.group(1)) + 1 if found else 2
-        gh("DELETE", f"/repos/{repo}/issues/comments/{mine['id']}")
+        archive(repo, mine, revision - 1)
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     comment(repo, number, text.replace(MARKER, f"{MARKER}\n**Revision {revision}** · {reason} · {stamp}", 1))
 

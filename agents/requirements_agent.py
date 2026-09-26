@@ -117,11 +117,23 @@ def render(r: Review) -> str:
     return "\n".join(lines)
 
 
-def post_review(repo: str, number: int, text: str, reason: str):
-    """Keep exactly one review, always the newest comment in the thread.
+def archive(repo: str, old: dict, revision: int):
+    """Collapse a superseded review instead of deleting it, so every revision stays on record.
 
-    The old review is deleted and the new one posted at the bottom, so the latest
-    review is where people look, and the revision number shows it changed.
+    The marker is removed, so only the newest review counts as current.
+    """
+    body = old["body"].replace(MARKER, "").strip()
+    gh(
+        "PATCH",
+        f"/repos/{repo}/issues/comments/{old['id']}",
+        json={"body": f"<details><summary>🗄️ Revision {revision} (superseded)</summary>\n\n{body}\n\n</details>"},
+    )
+
+
+def post_review(repo: str, number: int, text: str, reason: str):
+    """Post the new review at the bottom; collapse the previous one above it.
+
+    The latest review is where people look, and older revisions stay on record.
     """
     comments = gh("GET", f"/repos/{repo}/issues/{number}/comments", params={"per_page": 100})
     mine = next((c for c in comments if MARKER in c["body"]), None)
@@ -129,7 +141,7 @@ def post_review(repo: str, number: int, text: str, reason: str):
     if mine:
         found = re.search(r"Revision (\d+)", mine["body"])
         revision = int(found.group(1)) + 1 if found else 2
-        gh("DELETE", f"/repos/{repo}/issues/comments/{mine['id']}")
+        archive(repo, mine, revision - 1)
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     header = f"**Revision {revision}** · {reason} · {stamp}"
     comment(repo, number, text.replace(MARKER, f"{MARKER}\n{header}", 1))
