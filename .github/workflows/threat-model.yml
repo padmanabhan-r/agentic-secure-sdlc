@@ -1,0 +1,41 @@
+name: Threat model
+
+# pull_request_target runs this workflow from main, with secrets. That is safe only because
+# the PR's code is never checked out or run: the design doc is read through the API as data.
+on:
+  pull_request_target:
+    types: [labeled, synchronize]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: threat-model-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  threat-model:
+    if: >-
+      (github.event.action == 'labeled' &&
+        (github.event.label.name == 'needs-threat-model' || github.event.label.name == 'threat-model-approved')) ||
+      github.event.action == 'synchronize'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main   # our code and context model, never the PR's
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r agents/requirements.txt
+      - name: Threat model flow
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AGENT_ENABLED: ${{ vars.AGENT_ENABLED }}
+          SECURITY_REVIEWERS: ${{ vars.SECURITY_REVIEWERS }}
+          PYTHONPATH: agents
+        run: python agents/threat_model_agent.py

@@ -91,7 +91,16 @@ flowchart TD
     E -.->|"design changed later:<br/>approval resets to 🔴"| B
 ```
 
-**Status:** the design PR is open. The threat-model step (🤖) is next to build.
+**The two labels, on the design PR:**
+
+| Label | Who adds it | What it triggers |
+|---|---|---|
+| 🔴 `needs-threat-model` | Engineer | The threat model is drafted. While it is on, every new commit re-drafts it. |
+| 🟢 `threat-model-approved` | Security reviewer only | Sign-off, after the reviewer has commented on the latest threat model. Otherwise removed. |
+
+The tech lead also approves the PR (engineering review) before it merges.
+
+**Status:** design PR #3 is open and the threat-model step is built. Next: the engineer adds 🔴 to PR #3.
 
 ## What is where
 
@@ -101,6 +110,8 @@ flowchart TD
 | `agents/requirements_agent.py` | The requirements agent and the flow above |
 | `.github/workflows/requirements-review.yml` | Runs the flow on issue events |
 | `docs/design/` | Designs, one per feature. Input to the threat model. |
+| `agents/threat_model_agent.py` | The threat-model step and its flow |
+| `.github/workflows/threat-model.yml` | Runs it on design PR events |
 
 ## Stages
 
