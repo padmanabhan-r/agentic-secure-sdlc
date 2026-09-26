@@ -7,7 +7,7 @@ following the order a feature takes: requirement, design, code, CI, release, pro
 
 | Built | What it does | JD line |
 |---|---|---|
-| **Security context model** | One YAML file of the product's security facts: data sensitivity, roles, rules, limits. Every step reads it. | "Own the product security context model" |
+| **Security context model** | One YAML file of the product's security facts: data sensitivity, roles, rules, limits. Every step reads it. Changing it is a security change: the ₹50,000 second-approver limit went through a design PR, a threat model and sign-off (PR #4). | "Own the product security context model" |
 | **Stage 1: requirement review** | An LLM step turns a requirement (GitHub issue) into security acceptance criteria. A human reviewer signs off. | requirements, human-review requirements |
 | **Stage 2: threat model** | An LLM writes STRIDE threats for every boundary-crossing flow in the design; **Jev** judges whether each fix is already in the design. A human reviewer signs off. | threat modeling, validate agent outputs |
 | **Label-driven flow** | Labels trigger each step; only collaborators can add them; comments never trigger anything. | human-review points, escalation |
@@ -136,21 +136,21 @@ history is on record.
 (two items accepted as risk for v1, to fix before general availability), approved by the tech lead,
 merged. The design is on `main`.
 
-## Stage 3: code → build gate
+## Stage 3: code → approval gate
 
 Development means product code under `rupi-yeah/`. It can only reach `main` once its requirement and its
 design have both been approved.
 
 ```mermaid
 flowchart TD
-    A["👩‍💻 Engineer opens a code PR<br/>'Closes #2'"] --> B{"🚦 Build gate"}
+    A["👩‍💻 Engineer opens a code PR<br/>'Closes #2'"] --> B{"🚦 Approval gate"}
     B -->|"requirement not 🟢<br/>or design not approved"| C["⛔ Merge blocked"]
     B -->|"requirement 🟢 + design merged<br/>with 🟢 threat-model-approved"| D["👍 Tech lead approves"]
     D --> E["✅ Merged"]
     F["📝 Requirement edited later:<br/>approval resets"] -.->|"gate re-checked:<br/>turns red"| B
 ```
 
-**The gate is code, not an LLM.** It sets the required status check `security/build-gate`:
+**The gate is code, not an LLM.** It sets the required status check `security/approval-gate`:
 
 | The PR... | Gate |
 |---|---|
@@ -163,7 +163,37 @@ flowchart TD
 If a requirement's approval is reset after the PR opened, the requirements flow re-checks every open PR
 that closes it, and the gate turns red again. Code can be written any time; it cannot ship early.
 
-**Status:** the gate is built. Next: the engineer builds the Rupi-yeah app.
+**Status:** the gate is built, and the app's PR #5 passes it.
+
+## Stage 4: the code security gate
+
+Before code reaches `main`, every security feature in the design must be proven in the code. The gate
+checks in layers, cheapest and most certain first; the LLM comes last.
+
+```mermaid
+flowchart LR
+    PR["👩‍💻 Code PR"] --> A["🔍 SAST<br/>Semgrep + our<br/>design rules"]
+    PR --> B["🔑 Secrets<br/>Gitleaks"]
+    PR --> C["📦 Dependencies<br/>npm audit, pip-audit"]
+    PR --> D["🏗️ Build<br/>types, lint, build"]
+    PR --> E["🧪 Security tests<br/>one per design decision"]
+    PR --> F["🤖 Design conformance<br/>agent + Jev"]
+    A & B & C & D & E & F --> G{"All green?"}
+    G -->|yes| H["👍 Tech lead approves → merge"]
+    G -->|no| I["⛔ Merge blocked"]
+```
+
+| # | Check (required on `main`) | What it proves | Status |
+|---|---|---|---|
+| 1 | `sast` | No injection or unsafe patterns. Includes **our own rules written from the design**: every server action checks the CSRF token, identity never comes from the request, no HTML from data, cookies use the secure options (`security/semgrep/rupi-yeah.yml`). | ✅ built |
+| 2 | `secrets` | No keys or tokens in any commit of the PR | ✅ built |
+| 3 | `dependencies` | No known-vulnerable packages. It found one on day one: `requests` 2.32.5 (PYSEC-2026-2275), now 2.33. | ✅ built |
+| 4 | `build` | Types, lint and production build pass | ✅ built |
+| 5 | security tests | Each design decision as a test that fails if the code stops enforcing it | next |
+| 6 | API checks | Every endpoint identifies the caller, rejects bad input, leaks nothing | next |
+| 7 | design conformance | An agent with tools finds the code that enforces each design decision; Jev judges it | next |
+
+This workflow runs the PR's own code, so it uses `pull_request` with a read-only token and no secrets.
 
 ## What is where
 
@@ -175,10 +205,12 @@ that closes it, and the gate turns red again. Code can be written any time; it c
 | `docs/design/` | Designs, one per feature. Input to the threat model. |
 | `agents/threat_model_agent.py` | The threat-model step and its flow |
 | `.github/workflows/threat-model.yml` | Runs it on design PR events |
-| `agents/gate.py`, `.github/workflows/build-gate.yml` | The Stage 3 build gate |
+| `agents/approval_gate.py`, `.github/workflows/approval-gate.yml` | The Stage 3 approval gate |
+| `.github/workflows/code-security.yml`, `security/semgrep/` | The Stage 4 code security gate |
+| `rupi-yeah/` | The Rupi-yeah app (Next.js), with its `PRODUCT.md` and `DESIGN.md` |
 | Repo secrets | `OPENAI_API_KEY` (threats and criteria), `OPENROUTER_API_KEY` (Jev) |
 | Repo variables | `SECURITY_REVIEWERS` (who may approve), `AGENT_ENABLED` (kill switch) |
-| Ruleset "main: security gates" | Required checks `security/threat-model` and `security/build-gate`, plus 1 approving review |
+| Ruleset "main: security gates" | Required checks `security/threat-model`, `security/approval-gate`, `sast`, `secrets`, `dependencies`, `build`, plus 1 approving review |
 
 ## Stages
 
@@ -186,5 +218,5 @@ that closes it, and the gate turns red again. Code can be written any time; it c
 |---|---|---|
 | 1 | Requirement → security acceptance criteria, using the context model | ✅ done: issue #2 |
 | 2 | Design → threat model (STRIDE + Jev) | ✅ done: PR #3 |
-| 3 | Code → build gate ✅ built; the Rupi-yeah app (Next.js) | 🔨 in progress |
-| 4 | PR security agent: the first real agent, with tools | later |
+| 3 | Code → approval gate; the Rupi-yeah app (Next.js) | ✅ built: app in PR #5 |
+| 4 | Code security gate: SAST, secrets, dependencies, build, security tests, design-conformance agent | 🔨 layers 1–4 done |

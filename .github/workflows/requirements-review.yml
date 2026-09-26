@@ -9,7 +9,7 @@ on:
 permissions:
   contents: read
   issues: write
-  statuses: write        # refresh the build gate on linked code PRs
+  statuses: write        # refresh the approval gate on linked code PRs
   pull-requests: read
 
 concurrency:

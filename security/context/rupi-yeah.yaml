@@ -25,7 +25,7 @@ roles:
 rules:
   - Nobody approves or rejects their own claim.
   - Managers act only on claims from their direct reports, checked on the server for every request.
-  - A claim above 1,000 USD needs the manager and a second approver before reimbursement.
+  - A claim above ₹50,000 needs the manager and a second approver before reimbursement. The second approver must not be the submitter or the first approver.
   - Every approve, reject and resubmit is audited: who, when, what changed. The audit record cannot be edited.
   - A rejected claim can be resubmitted with new proof, and goes back to the start of approval.
   - Once approved, a claim's amount, receipts and payment proof cannot change.
