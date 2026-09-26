@@ -32,6 +32,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en-IN" className={`${mukta.variable} ${kalam.variable}`}>
       <body>
+        {/* nosemgrep: security.semgrep.html-from-data -- a fixed design-contract comment; no user data */}
         <div hidden dangerouslySetInnerHTML={{ __html: `<!--${CONTRACT}-->` }} />
         <div className="min-h-dvh lg:flex">
           <Spine user={user} csrf={csrf} waiting={waiting} />
