@@ -1,0 +1,524 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-26T07:19:29.528Z",
+  "title": "Design System: Rupi-yeah",
+  "extensions": {
+    "colorMeta": {
+      "khata": {
+        "role": "primary",
+        "displayName": "Khata Red",
+        "canonical": "oklch(46.0% 0.173 25.1)",
+        "tonalRamp": [
+          "oklch(15% 0.173 25.1)",
+          "oklch(25% 0.173 25.1)",
+          "oklch(35% 0.173 25.1)",
+          "oklch(45% 0.173 25.1)",
+          "oklch(55% 0.173 25.1)",
+          "oklch(65% 0.173 25.1)",
+          "oklch(80% 0.080 25.1)",
+          "oklch(95% 0.030 25.1)"
+        ]
+      },
+      "khata-deep": {
+        "role": "primary",
+        "displayName": "Deep Binding",
+        "canonical": "oklch(37.8% 0.141 24.5)",
+        "tonalRamp": [
+          "oklch(15% 0.141 24.5)",
+          "oklch(25% 0.141 24.5)",
+          "oklch(35% 0.141 24.5)",
+          "oklch(45% 0.141 24.5)",
+          "oklch(55% 0.141 24.5)",
+          "oklch(65% 0.141 24.5)",
+          "oklch(80% 0.080 24.5)",
+          "oklch(95% 0.030 24.5)"
+        ]
+      },
+      "margin": {
+        "role": "primary",
+        "displayName": "Margin Red",
+        "canonical": "oklch(54.6% 0.182 21.9)",
+        "tonalRamp": [
+          "oklch(15% 0.182 21.9)",
+          "oklch(25% 0.182 21.9)",
+          "oklch(35% 0.182 21.9)",
+          "oklch(45% 0.182 21.9)",
+          "oklch(55% 0.182 21.9)",
+          "oklch(65% 0.182 21.9)",
+          "oklch(80% 0.080 21.9)",
+          "oklch(95% 0.030 21.9)"
+        ]
+      },
+      "haldi": {
+        "role": "secondary",
+        "displayName": "Haldi",
+        "canonical": "oklch(75.5% 0.152 78.6)",
+        "tonalRamp": [
+          "oklch(15% 0.152 78.6)",
+          "oklch(25% 0.152 78.6)",
+          "oklch(35% 0.152 78.6)",
+          "oklch(45% 0.152 78.6)",
+          "oklch(55% 0.152 78.6)",
+          "oklch(65% 0.152 78.6)",
+          "oklch(80% 0.080 78.6)",
+          "oklch(95% 0.030 78.6)"
+        ]
+      },
+      "haldi-ink": {
+        "role": "secondary",
+        "displayName": "Haldi Ink",
+        "canonical": "oklch(47.1% 0.097 75.6)",
+        "tonalRamp": [
+          "oklch(15% 0.097 75.6)",
+          "oklch(25% 0.097 75.6)",
+          "oklch(35% 0.097 75.6)",
+          "oklch(45% 0.097 75.6)",
+          "oklch(55% 0.097 75.6)",
+          "oklch(65% 0.097 75.6)",
+          "oklch(80% 0.080 75.6)",
+          "oklch(95% 0.030 75.6)"
+        ]
+      },
+      "haldi-wash": {
+        "role": "secondary",
+        "displayName": "Haldi Wash",
+        "canonical": "oklch(96.6% 0.032 87.3)",
+        "tonalRamp": [
+          "oklch(15% 0.032 87.3)",
+          "oklch(25% 0.032 87.3)",
+          "oklch(35% 0.032 87.3)",
+          "oklch(45% 0.032 87.3)",
+          "oklch(55% 0.032 87.3)",
+          "oklch(65% 0.032 87.3)",
+          "oklch(80% 0.032 87.3)",
+          "oklch(95% 0.030 87.3)"
+        ]
+      },
+      "awaiting": {
+        "role": "tertiary",
+        "displayName": "Second-Approval Indigo",
+        "canonical": "oklch(39.5% 0.135 279.8)",
+        "tonalRamp": [
+          "oklch(15% 0.135 279.8)",
+          "oklch(25% 0.135 279.8)",
+          "oklch(35% 0.135 279.8)",
+          "oklch(45% 0.135 279.8)",
+          "oklch(55% 0.135 279.8)",
+          "oklch(65% 0.135 279.8)",
+          "oklch(80% 0.080 279.8)",
+          "oklch(95% 0.030 279.8)"
+        ]
+      },
+      "ready": {
+        "role": "tertiary",
+        "displayName": "Settled Green",
+        "canonical": "oklch(46.7% 0.097 157.5)",
+        "tonalRamp": [
+          "oklch(15% 0.097 157.5)",
+          "oklch(25% 0.097 157.5)",
+          "oklch(35% 0.097 157.5)",
+          "oklch(45% 0.097 157.5)",
+          "oklch(55% 0.097 157.5)",
+          "oklch(65% 0.097 157.5)",
+          "oklch(80% 0.080 157.5)",
+          "oklch(95% 0.030 157.5)"
+        ]
+      },
+      "rejected": {
+        "role": "tertiary",
+        "displayName": "Refusal Red",
+        "canonical": "oklch(46.0% 0.173 25.1)",
+        "tonalRamp": [
+          "oklch(15% 0.173 25.1)",
+          "oklch(25% 0.173 25.1)",
+          "oklch(35% 0.173 25.1)",
+          "oklch(45% 0.173 25.1)",
+          "oklch(55% 0.173 25.1)",
+          "oklch(65% 0.173 25.1)",
+          "oklch(80% 0.080 25.1)",
+          "oklch(95% 0.030 25.1)"
+        ]
+      },
+      "rejected-wash": {
+        "role": "tertiary",
+        "displayName": "Refusal Wash",
+        "canonical": "oklch(94.4% 0.022 14.1)",
+        "tonalRamp": [
+          "oklch(15% 0.022 14.1)",
+          "oklch(25% 0.022 14.1)",
+          "oklch(35% 0.022 14.1)",
+          "oklch(45% 0.022 14.1)",
+          "oklch(55% 0.022 14.1)",
+          "oklch(65% 0.022 14.1)",
+          "oklch(80% 0.022 14.1)",
+          "oklch(95% 0.022 14.1)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Page White",
+        "canonical": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "oklch(15% 0.000 89.9)",
+          "oklch(25% 0.000 89.9)",
+          "oklch(35% 0.000 89.9)",
+          "oklch(45% 0.000 89.9)",
+          "oklch(55% 0.000 89.9)",
+          "oklch(65% 0.000 89.9)",
+          "oklch(80% 0.000 89.9)",
+          "oklch(95% 0.000 89.9)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Blue-Black Ink",
+        "canonical": "oklch(30.6% 0.090 270.9)",
+        "tonalRamp": [
+          "oklch(15% 0.090 270.9)",
+          "oklch(25% 0.090 270.9)",
+          "oklch(35% 0.090 270.9)",
+          "oklch(45% 0.090 270.9)",
+          "oklch(55% 0.090 270.9)",
+          "oklch(65% 0.090 270.9)",
+          "oklch(80% 0.080 270.9)",
+          "oklch(95% 0.030 270.9)"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Soft Ink",
+        "canonical": "oklch(45.7% 0.073 273.4)",
+        "tonalRamp": [
+          "oklch(15% 0.073 273.4)",
+          "oklch(25% 0.073 273.4)",
+          "oklch(35% 0.073 273.4)",
+          "oklch(45% 0.073 273.4)",
+          "oklch(55% 0.073 273.4)",
+          "oklch(65% 0.073 273.4)",
+          "oklch(80% 0.073 273.4)",
+          "oklch(95% 0.030 273.4)"
+        ]
+      },
+      "ink-faint": {
+        "role": "neutral",
+        "displayName": "Faint Ink",
+        "canonical": "oklch(57.5% 0.053 274.3)",
+        "tonalRamp": [
+          "oklch(15% 0.053 274.3)",
+          "oklch(25% 0.053 274.3)",
+          "oklch(35% 0.053 274.3)",
+          "oklch(45% 0.053 274.3)",
+          "oklch(55% 0.053 274.3)",
+          "oklch(65% 0.053 274.3)",
+          "oklch(80% 0.053 274.3)",
+          "oklch(95% 0.030 274.3)"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Ruling Blue",
+        "canonical": "oklch(90.7% 0.026 268.8)",
+        "tonalRamp": [
+          "oklch(15% 0.026 268.8)",
+          "oklch(25% 0.026 268.8)",
+          "oklch(35% 0.026 268.8)",
+          "oklch(45% 0.026 268.8)",
+          "oklch(55% 0.026 268.8)",
+          "oklch(65% 0.026 268.8)",
+          "oklch(80% 0.026 268.8)",
+          "oklch(95% 0.026 268.8)"
+        ]
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Strong Ruling",
+        "canonical": "oklch(82.2% 0.045 269.9)",
+        "tonalRamp": [
+          "oklch(15% 0.045 269.9)",
+          "oklch(25% 0.045 269.9)",
+          "oklch(35% 0.045 269.9)",
+          "oklch(45% 0.045 269.9)",
+          "oklch(55% 0.045 269.9)",
+          "oklch(65% 0.045 269.9)",
+          "oklch(80% 0.045 269.9)",
+          "oklch(95% 0.030 269.9)"
+        ]
+      },
+      "select": {
+        "role": "neutral",
+        "displayName": "Open-Entry Wash",
+        "canonical": "oklch(95.8% 0.012 271.3)",
+        "tonalRamp": [
+          "oklch(15% 0.012 271.3)",
+          "oklch(25% 0.012 271.3)",
+          "oklch(35% 0.012 271.3)",
+          "oklch(45% 0.012 271.3)",
+          "oklch(55% 0.012 271.3)",
+          "oklch(65% 0.012 271.3)",
+          "oklch(80% 0.012 271.3)",
+          "oklch(95% 0.012 271.3)"
+        ]
+      },
+      "ledger-hover": {
+        "role": "neutral",
+        "displayName": "Hover Wash",
+        "canonical": "#f6f8fd",
+        "tonalRamp": [
+          "oklch(15% 0.012 271.3)",
+          "oklch(25% 0.012 271.3)",
+          "oklch(35% 0.012 271.3)",
+          "oklch(45% 0.012 271.3)",
+          "oklch(55% 0.012 271.3)",
+          "oklch(65% 0.012 271.3)",
+          "oklch(80% 0.012 271.3)",
+          "oklch(95% 0.012 271.3)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page title, once per page."
+      },
+      "amount": {
+        "displayName": "Amount",
+        "purpose": "The open entry's amount between its red double rules."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Merchant name heading an open entry."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section heads on the page."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text and ledger cells; intro copy capped at 62ch."
+      },
+      "body-dense": {
+        "displayName": "Body dense",
+        "purpose": "Rule checks, comments, navigation, button labels."
+      },
+      "figures": {
+        "displayName": "Figures",
+        "purpose": "Entry ids, dates, counts, timestamps in tabular lining numerals."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Ledger column heads and status marks; sentence case."
+      },
+      "initials": {
+        "displayName": "Initials (Kalam)",
+        "purpose": "Approver initials only; the one hand in the system."
+      }
+    },
+    "shadows": [
+      {
+        "name": "nav-pressed",
+        "value": "inset 0 1px 3px rgb(0 0 0 / 0.35)",
+        "purpose": "Active navigation item pressed into the cloth. State only."
+      },
+      {
+        "name": "identity-chip",
+        "value": "0 2px 8px -2px rgb(0 0 0 / 0.35)",
+        "purpose": "The signed-in identity chip on the spine. State only."
+      },
+      {
+        "name": "approve-lift",
+        "value": "0 1px 2px rgb(31 42 92 / 0.25), 0 4px 12px -4px rgb(31 42 92 / 0.35)",
+        "purpose": "Present on the Approve button in the build; a one-off, not a pattern for new surfaces (see The Flat Book Rule)."
+      }
+    ],
+    "lines": [
+      {
+        "name": "red-double-margin",
+        "value": "linear-gradient(to right, var(--margin) 0 1px, transparent 1px 2px, var(--margin) 2px 3px, transparent 3px)",
+        "purpose": "The rupee column's double margin, drawn as a background 3px wide."
+      },
+      {
+        "name": "ruled-page",
+        "value": "repeating-linear-gradient(to bottom, transparent 0 calc(var(--row) - 1px), var(--rule) calc(var(--row) - 1px) var(--row))",
+        "purpose": "The page ruling at the 3rem row pitch."
+      },
+      {
+        "name": "page-divider",
+        "value": "3px double var(--margin)",
+        "purpose": "Between ledger and open entry; above and below the open entry's amount."
+      },
+      {
+        "name": "total-rule",
+        "value": "3px double var(--ink)",
+        "purpose": "Under a ledger total."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-ink",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Ink-in and row hover transitions."
+      },
+      {
+        "name": "ink-in",
+        "value": "700ms ease-ink; clip-path inset(0 100% 0 0) to inset(0), blur 1.5px to 0, opacity 0.4 to 1",
+        "purpose": "A fresh decision's initials laid down left to right, once per decision. Disabled under reduced motion."
+      },
+      {
+        "name": "state-change",
+        "value": "160ms",
+        "purpose": "Background and shadow transitions on rows and buttons; press is 120ms, 1px down."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "40rem"
+      },
+      {
+        "name": "md",
+        "value": "48rem"
+      },
+      {
+        "name": "lg",
+        "value": "64rem",
+        "purpose": "Spine becomes a sticky left column; margin runs to the page foot."
+      },
+      {
+        "name": "xl",
+        "value": "80rem",
+        "purpose": "Open entry docks right at 27rem; Status gets its own column."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Approve Button",
+      "kind": "button",
+      "refersTo": "button-approve",
+      "description": "The one filled action on a page: approve or give second approval.",
+      "html": "<button class=\"ds-btn ds-btn-approve\"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\"/></svg> Approve</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;height:2.75rem;padding:0 1.125rem;border-radius:6px;font-family:Mukta,system-ui,sans-serif;font-weight:600;font-size:.9375rem;cursor:pointer;border:0;transition:background-color 160ms,transform 120ms}.ds-btn:active{transform:translateY(1px)}.ds-btn:focus-visible{outline:2px solid var(--haldi);outline-offset:2px}.ds-btn-approve{background:var(--ink);color:#fff}.ds-btn-approve:hover{background:#28356f}"
+    },
+    {
+      "name": "Reject Button",
+      "kind": "button",
+      "refersTo": "button-reject",
+      "description": "Reject beside Approve: white, refusal-red text.",
+      "html": "<button class=\"ds-btn ds-btn-reject\"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\"><path d=\"M18 6 6 18M6 6l12 12\"/></svg> Reject</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;gap:.5rem;height:2.75rem;padding:0 1.125rem;border-radius:6px;font-family:Mukta,system-ui,sans-serif;font-weight:600;font-size:.9375rem;cursor:pointer;transition:background-color 160ms}.ds-btn:focus-visible{outline:2px solid var(--haldi);outline-offset:2px}.ds-btn-reject{background:#fff;color:var(--rejected);border:1px solid #e8b9bc}.ds-btn-reject:hover{background:var(--rejected-wash)}"
+    },
+    {
+      "name": "Blocked Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost-blocked",
+      "description": "A blocked action drawn, not hidden, with the rule written beneath.",
+      "html": "<div class=\"ds-blocked\"><button class=\"ds-btn-ghost\" disabled>Approve</button><p><b>Blocked by the server:</b> you cannot approve your own claim.</p></div>",
+      "css": ".ds-blocked{font-family:Mukta,system-ui,sans-serif;display:flex;flex-direction:column;gap:.75rem}.ds-btn-ghost{height:2.75rem;padding:0 1.125rem;border-radius:6px;background:transparent;color:var(--ink-faint);border:1.5px dashed var(--rule-strong);font:600 .9375rem Mukta,system-ui,sans-serif;cursor:not-allowed;align-self:flex-start}.ds-blocked p{margin:0;font-size:.875rem;color:var(--rejected)}"
+    },
+    {
+      "name": "Comment Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Plain-text comment on a decision.",
+      "html": "<textarea class=\"ds-field\" rows=\"2\" placeholder=\"Anything the submitter should know\"></textarea>",
+      "css": ".ds-field{width:100%;border:1px solid var(--rule-strong);border-radius:6px;padding:.625rem .75rem;color:var(--ink);background:#fff;font:1rem/1.5 Mukta,system-ui,sans-serif;resize:vertical}.ds-field::placeholder{color:var(--ink-faint)}.ds-field:focus-visible{outline:2px solid var(--haldi);outline-offset:0;border-color:var(--haldi)}"
+    },
+    {
+      "name": "Status Marks",
+      "kind": "chip",
+      "description": "One colour per state: a dot and a label, never a filled chip.",
+      "html": "<div class=\"ds-st-row\"><span class=\"ds-st ds-st-pending\">Pending</span><span class=\"ds-st ds-st-awaiting\">Awaiting second approval</span><span class=\"ds-st ds-st-ready\">Ready for reimbursement</span><span class=\"ds-st ds-st-rejected\">Rejected</span></div>",
+      "css": ".ds-st-row{display:flex;flex-wrap:wrap;gap:1.25rem;font-family:Mukta,system-ui,sans-serif}.ds-st{display:inline-flex;align-items:center;gap:.375rem;font-size:.8125rem;font-weight:600}.ds-st::before{content:\"\";width:.5rem;height:.5rem;border-radius:999px;background:currentColor}.ds-st-pending{color:var(--haldi-ink)}.ds-st-pending::before{background:var(--haldi)}.ds-st-awaiting{color:var(--awaiting)}.ds-st-ready{color:var(--ready)}.ds-st-rejected{color:var(--rejected)}"
+    },
+    {
+      "name": "Ledger",
+      "kind": "custom",
+      "refersTo": "ledger-row",
+      "description": "Claims as ruled entries; the rupee column behind the red double margin; the open row inked.",
+      "html": "<table class=\"ds-ledger\"><thead><tr><th>Entry</th><th>Claimed by</th><th>Merchant</th><th class=\"ds-amt\">Amount</th></tr></thead><tbody><tr class=\"ds-open\"><td class=\"ds-num\">C-2041</td><td>Asha Nair</td><td>Uber</td><td class=\"ds-amt\">₹1,240</td></tr><tr><td class=\"ds-num\">C-2042</td><td>Kiran Rao</td><td>Taj Club House</td><td class=\"ds-amt\">₹18,500</td></tr><tr><td class=\"ds-num\">C-2043</td><td>Kiran Rao</td><td>IndiGo</td><td class=\"ds-amt\">₹72,850</td></tr></tbody><tfoot><tr><td class=\"ds-num\">Total</td><td class=\"ds-num\">3 entries</td><td></td><td class=\"ds-amt ds-total\">₹92,590</td></tr></tfoot></table>",
+      "css": ".ds-ledger{width:100%;border-collapse:collapse;font-family:Mukta,system-ui,sans-serif;color:var(--ink);font-variant-numeric:tabular-nums lining-nums;background:#fff}.ds-ledger th{height:3rem;padding:0 .75rem .5rem;text-align:left;vertical-align:bottom;font-size:.8125rem;font-weight:600;color:var(--ink-soft);border-bottom:1px solid var(--rule-strong)}.ds-ledger td{height:3rem;padding:0 .75rem;border-bottom:1px solid var(--rule)}.ds-ledger tbody tr{transition:background-color 160ms cubic-bezier(.16,1,.3,1)}.ds-ledger tbody tr:hover{background:#f6f8fd}.ds-ledger tr.ds-open{background:var(--select)}.ds-num{font-size:.875rem;color:var(--ink-soft)}.ds-amt{text-align:right!important;font-weight:600;white-space:nowrap;background-image:linear-gradient(to right,var(--margin) 0 1px,transparent 1px 2px,var(--margin) 2px 3px,transparent 3px);background-repeat:no-repeat;background-size:3px 100%}.ds-ledger td.ds-total{border-bottom:3px double var(--ink)}"
+    },
+    {
+      "name": "Initialled Line",
+      "kind": "custom",
+      "description": "A decision initialled in Kalam; a fresh one inks in left to right.",
+      "html": "<ul class=\"ds-init\"><li><span class=\"ds-ink ds-ink-in\">RK</span><span class=\"ds-id\">C-2039</span><span class=\"ds-what\"><b class=\"ds-no\">Rejected</b> · Kiran Rao, Amazon</span><span class=\"ds-amt2\">₹8,990</span></li><li><span class=\"ds-ink\">RK</span><span class=\"ds-id\">C-2038</span><span class=\"ds-what\"><b class=\"ds-ok\">Approved</b> · Asha Nair, Rapido</span><span class=\"ds-amt2\">₹310</span></li></ul>",
+      "css": ".ds-init{list-style:none;margin:0;padding:0;font-family:Mukta,system-ui,sans-serif;color:var(--ink)}.ds-init li{display:flex;align-items:center;gap:1rem;min-height:3rem;border-bottom:1px solid var(--rule)}.ds-ink{font-family:Kalam,cursive;font-weight:700;font-size:1.25rem;line-height:1;width:3rem;text-align:center}.ds-ink-in{animation:ds-ink-in 700ms cubic-bezier(.16,1,.3,1) both}@keyframes ds-ink-in{from{clip-path:inset(0 100% 0 0);filter:blur(1.5px);opacity:.4}to{clip-path:inset(0);filter:none;opacity:1}}@media (prefers-reduced-motion:reduce){.ds-ink-in{animation:none}}.ds-id{width:4.5rem;font-size:.875rem;color:var(--ink-soft);font-variant-numeric:tabular-nums}.ds-what{flex:1;color:var(--ink-soft)}.ds-no{color:var(--rejected)}.ds-ok{color:var(--ready)}.ds-amt2{font-weight:600}"
+    },
+    {
+      "name": "Spine Navigation",
+      "kind": "nav",
+      "refersTo": "spine",
+      "description": "The flat khata-red spine: seal, wordmark, navigation with the haldi waiting badge.",
+      "html": "<nav class=\"ds-spine\"><div class=\"ds-brand\"><svg width=\"34\" height=\"34\" viewBox=\"0 0 48 48\" fill=\"none\"><circle cx=\"24\" cy=\"24\" r=\"22\" stroke=\"currentColor\" stroke-width=\"2\"/><circle cx=\"24\" cy=\"24\" r=\"17.5\" stroke=\"currentColor\" stroke-dasharray=\"1.2 2.2\"/><g stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M16.5 15.5h15\"/><path d=\"M16.5 20.5h15\"/><path d=\"M20 15.5c4.6 0 7 2.1 7 5s-2.4 5-7 5h-2.5l10 9\"/></g></svg><span>Rupi<i>-</i>yeah</span></div><a href=\"#\" class=\"ds-nav ds-active\">Approvals<span class=\"ds-badge\">4</span></a><a href=\"#\" class=\"ds-nav\">My claims</a><a href=\"#\" class=\"ds-nav\">Audit trail</a></nav>",
+      "css": ".ds-spine{background:var(--khata);color:#fff;width:15.5rem;padding:1.75rem 1.25rem;display:flex;flex-direction:column;gap:.25rem;font-family:Mukta,system-ui,sans-serif}.ds-brand{display:flex;align-items:center;gap:.625rem;margin-bottom:1.5rem;font-size:1.375rem;font-weight:700;letter-spacing:-.01em}.ds-brand i{font-style:normal;color:var(--haldi)}.ds-nav{display:flex;align-items:center;gap:.625rem;padding:.5rem .625rem;border-radius:6px;font-size:.9375rem;font-weight:500;color:rgb(255 255 255/.85);text-decoration:none;transition:background-color 160ms,color 160ms}.ds-nav:hover{background:rgb(255 255 255/.1);color:#fff}.ds-nav:focus-visible{outline:2px solid #fff;outline-offset:2px}.ds-nav.ds-active{background:var(--khata-deep);color:#fff;box-shadow:inset 0 1px 3px rgb(0 0 0/.35)}.ds-badge{margin-left:auto;border-radius:999px;background:var(--haldi);color:var(--ink);padding:0 .375rem;font-size:.75rem;font-weight:700}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Bahi-Khata",
+    "overview": "Rupi-yeah is kept like the red cloth-bound account book of an Indian trading house. The binding is a flat field of khata red that carries the brand, the navigation and the signed-in person; everything else is a white page ruled in faint blue at one fixed row pitch, written in blue-black ink. Claims are ledger entries, one ruled line each. The rupee column is set off from the rest of the line by a red double margin that runs from the column head to the foot of the page, through the blank ruled rows below the last entry. Decisions are initialled in hand: the approver's initials, in Kalam, are the one handwritten element, and a fresh decision is inked in left to right as you watch.\n\nThe page is dense and quiet. There are no cards, no tiles and no dashboard metrics; information sits on rules, and hierarchy comes from weight and ink strength rather than boxes. Colour is spent on meaning: red is the binding, the margin and a refusal; haldi yellow is what waits; green is what is done; indigo is a second approval pending. When an entry is opened it docks on the right as a second page, separated by the same red double rule, with the amount written large between two double rules like a ledger total.\n\nThe world refuses the card-grid SaaS dashboard: no stat tiles, no rounded panels floating on a grey canvas, no gradient chrome.",
+    "keyCharacteristics": [
+      "Flat khata-red spine; white ruled page; blue-black ink for every entry.",
+      "One row pitch (3rem) shared by the ruled background, table rows, trail steps and initialled lines.",
+      "The red double margin marks money, always to the left of the rupee column.",
+      "Status colour is law: one colour per state, never borrowed for decoration.",
+      "Initials in Kalam are the only hand; Mukta runs the interface in Latin and Devanagari.",
+      "Blocked actions are drawn as dashed ghosts that name the rule, never hidden."
+    ],
+    "rules": [
+      {
+        "name": "The Status Is Law Rule",
+        "body": "Each claim state owns one colour: Pending haldi, Awaiting second approval indigo, Ready green, Rejected red. A status colour is never used for decoration, emphasis or brand.",
+        "section": "colors"
+      },
+      {
+        "name": "The Haldi Means Waiting Rule",
+        "body": "Haldi marks what is waiting and where the keyboard is. It is never the selected-row wash; the open entry is marked by an ink wash and the red seal.",
+        "section": "colors"
+      },
+      {
+        "name": "The Red Margin Rule",
+        "body": "Money is set off by the red double margin (two 1px lines, 1px apart). It is drawn as a background, not a border, so collapsed table borders cannot repaint it.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Money Rule",
+        "body": "Every figure in a column uses tabular lining numerals so place values stack; a lone amount at display size uses proportional figures. The ₹ sign stays tight to the number, stepping in when the first digit is a narrow 1.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Hand Rule",
+        "body": "Kalam writes initials and nothing else. No handwritten headings, labels or notes.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "Headings, column heads and labels are sentence case at their natural tracking. Nothing is set in uppercase.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Book Rule",
+        "body": "No surface is lifted to separate it from another. Separate with a rule: blue for rows, red double for money and pages, ink double for a total.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do put every list of claims, decisions or events on the ruled page as ledger lines at the 3rem pitch.",
+      "Do set money right-aligned in tabular figures behind the red double margin, and let that margin run to the page foot.",
+      "Do separate pages and totals with double rules: red for the entry and money, ink for a total.",
+      "Do write initials in Kalam 700 in Blue-Black Ink, and ink a fresh decision in left to right.",
+      "Do draw a blocked action as a dashed ghost and write the rule that blocks it beneath.",
+      "Do fold narrow layouts by dropping columns in order of importance, keeping Entry and Amount and moving status first into the second line.",
+      "Do keep the spine one flat khata-red field."
+    ],
+    "donts": [
+      "Don't put claims in cards, tiles or stat blocks, or float panels on a grey canvas.",
+      "Don't use a status colour for anything but its state, or haldi for anything but waiting and focus.",
+      "Don't draw the red margin as a table border; draw it as a background.",
+      "Don't use Kalam for anything but initials.",
+      "Don't add gradients, texture or shadow to the spine; the cloth is flat.",
+      "Don't hide a disabled action; show it and name the rule.",
+      "Don't set labels or headings in uppercase or add small labels above headings."
+    ]
+  }
+}
