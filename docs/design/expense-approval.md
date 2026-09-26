@@ -13,11 +13,11 @@ service, which pays the employee.
 | # | Component | What it is | Who runs it |
 |---|---|---|---|
 | C1 | Web app | The page in the manager's browser | The user's device: **not trusted** |
-| C2 | Approvals API | Checks who the caller is and what they may do, then changes the claim | Acme |
-| C3 | Identity provider | Logs users in and issues session tokens | Acme (single sign-on) |
-| C4 | Claims database | Claims, their status, the org chart (who reports to whom) | Acme |
-| C5 | Receipt storage | Receipt images and payment proof | Acme (object storage) |
-| C6 | Audit log | Append-only record of every decision | Acme |
+| C2 | Approvals API | Checks who the caller is and what they may do, then changes the claim | Rupi-yeah |
+| C3 | Identity provider | Logs users in and issues session tokens | Rupi-yeah (single sign-on) |
+| C4 | Claims database | Claims, their status, the org chart (who reports to whom) | Rupi-yeah |
+| C5 | Receipt storage | Receipt images and payment proof | Rupi-yeah (object storage) |
+| C6 | Audit log | Append-only record of every decision | Rupi-yeah |
 | C7 | Payout service | Sends money to the employee's bank account | **External** bank partner |
 
 ## Data flows
@@ -27,7 +27,7 @@ flowchart LR
     subgraph internet["🌐 Internet: not trusted"]
         C1["C1 Web app<br/>(manager's browser)"]
     end
-    subgraph acme["🏢 Acme"]
+    subgraph rupiyeah["🏢 Rupi-yeah"]
         C3["C3 Identity provider"]
         C2["C2 Approvals API"]
         C4[("C4 Claims database")]
@@ -48,13 +48,13 @@ flowchart LR
 
 | Flow | From → To | Carries | Crosses a trust boundary? |
 |---|---|---|---|
-| F1 | Web app → Identity provider | Username, password, then a session token | **Yes**: internet → Acme |
-| F2 | Web app → Approvals API | Session token, claim ID, approve/reject, comment | **Yes**: internet → Acme |
+| F1 | Web app → Identity provider | Username, password, then a session token | **Yes**: internet → Rupi-yeah |
+| F2 | Web app → Approvals API | Session token, claim ID, approve/reject, comment | **Yes**: internet → Rupi-yeah |
 | F3 | Approvals API → Claims database | Claim reads, status writes | No |
 | F4 | Approvals API → Receipt storage | Request for a short-lived download link | No |
-| F5 | Web app → Receipt storage | The download link, then the receipt image | **Yes**: internet → Acme |
+| F5 | Web app → Receipt storage | The download link, then the receipt image | **Yes**: internet → Rupi-yeah |
 | F6 | Approvals API → Audit log | Who, what, when, before and after | No |
-| F7 | Approvals API → Payout service | Amount, employee bank account | **Yes**: Acme → external |
+| F7 | Approvals API → Payout service | Amount, employee bank account | **Yes**: Rupi-yeah → external |
 
 ## Key decisions
 
