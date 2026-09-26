@@ -67,3 +67,10 @@ flowchart LR
 4. **The decision and its audit record are written in one transaction.** A decision without an audit
    record cannot exist.
 5. **Only C2 can reach C7,** over mutual TLS, and only for claims in "Ready for reimbursement".
+6. **Login uses phishing-resistant MFA (passkeys or FIDO2 security keys) at C3.** A stolen password
+   alone cannot log in, and a fake login page cannot replay the second factor. *(Threat model F1-S)*
+7. **Sessions are short-lived, secure cookies:** `HttpOnly`, `Secure`, `SameSite=Strict`, 30 minutes
+   idle timeout, never readable by page scripts. *(Threat model F1-S)*
+8. **Every approve and reject request carries an anti-CSRF token** bound to the session, and C2 rejects
+   any request without a valid one. A page on another site cannot submit a decision on the manager's
+   behalf. *(Threat model F2-S)*
