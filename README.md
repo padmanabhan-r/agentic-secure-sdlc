@@ -98,7 +98,11 @@ flowchart TD
 | 🔴 `needs-threat-model` | Engineer | The threat model is drafted. While it is on, every new commit re-drafts it. |
 | 🟢 `threat-model-approved` | Security reviewer only | Sign-off, after the reviewer has commented on the latest threat model. Otherwise removed. |
 
-The tech lead also approves the PR (engineering review) before it merges.
+**A PR cannot merge into `main` until** (ruleset "main: security gates"):
+- the status check `security/threat-model` is green: it stays red on a design PR until 🟢 is on, and
+- the tech lead has approved the PR (1 approving review).
+
+The repo admin can bypass the ruleset. GitHub logs every bypass.
 
 **Status:** design PR #3 is open and the threat-model step is built. Next: the engineer adds 🔴 to PR #3.
 
