@@ -102,3 +102,49 @@ jobs:
       - if: steps.app.outputs.present == 'yes'
         working-directory: rupi-yeah
         run: npx next build
+
+  security-tests:
+    name: security-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Does this branch contain the app?
+        id: app
+        run: echo "present=$([ -f rupi-yeah/package.json ] && echo yes || echo no)" >> "$GITHUB_OUTPUT"
+      - if: steps.app.outputs.present == 'yes'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: rupi-yeah/package-lock.json
+      - if: steps.app.outputs.present == 'yes'
+        working-directory: rupi-yeah
+        run: npm ci
+      - name: Every design decision and context-model rule, as a test
+        if: steps.app.outputs.present == 'yes'
+        working-directory: rupi-yeah
+        run: npx vitest run tests/security-rules.test.ts
+
+  api-tests:
+    name: api-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Does this branch contain the app?
+        id: app
+        run: echo "present=$([ -f rupi-yeah/package.json ] && echo yes || echo no)" >> "$GITHUB_OUTPUT"
+      - if: steps.app.outputs.present == 'yes'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: rupi-yeah/package-lock.json
+      - if: steps.app.outputs.present == 'yes'
+        working-directory: rupi-yeah
+        run: npm ci
+      - name: Server actions and endpoints, called the way an attacker would
+        if: steps.app.outputs.present == 'yes'
+        working-directory: rupi-yeah
+        run: npx vitest run tests/api.test.ts
