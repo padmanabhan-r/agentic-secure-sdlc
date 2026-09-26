@@ -189,8 +189,8 @@ flowchart LR
 | 2 | `secrets` | No keys or tokens in any commit of the PR | ✅ built |
 | 3 | `dependencies` | No known-vulnerable packages. It found one on day one: `requests` 2.32.5 (PYSEC-2026-2275), now 2.33. | ✅ built |
 | 4 | `build` | Types, lint and production build pass | ✅ built |
-| 5 | security tests | Each design decision as a test that fails if the code stops enforcing it | next |
-| 6 | API checks | Every endpoint identifies the caller, rejects bad input, leaks nothing | next |
+| 5 | `security-tests` | Each design decision and context-model rule as a test that fails if the code stops enforcing it. One reads the context model YAML and checks the code uses the same ₹50,000 limit. **On its first run it caught a real gap:** the design says sessions expire after 30 idle minutes, the code said 7 days. | ✅ built |
+| 6 | `api-tests` | The real server actions and receipt endpoint, called the way an attacker would: no CSRF token, a forged user id, another team's claim, self-approval, a reused, expired or someone else's receipt link. All refused, all audited. (With a REST API and an OpenAPI spec, 42Crunch would add a spec audit and a conformance scan here.) | ✅ built |
 | 7 | design conformance | An agent with tools finds the code that enforces each design decision; Jev judges it | next |
 
 This workflow runs the PR's own code, so it uses `pull_request` with a read-only token and no secrets.
@@ -210,7 +210,7 @@ This workflow runs the PR's own code, so it uses `pull_request` with a read-only
 | `rupi-yeah/` | The Rupi-yeah app (Next.js), with its `PRODUCT.md` and `DESIGN.md` |
 | Repo secrets | `OPENAI_API_KEY` (threats and criteria), `OPENROUTER_API_KEY` (Jev) |
 | Repo variables | `SECURITY_REVIEWERS` (who may approve), `AGENT_ENABLED` (kill switch) |
-| Ruleset "main: security gates" | Required checks `security/threat-model`, `security/approval-gate`, `sast`, `secrets`, `dependencies`, `build`, plus 1 approving review |
+| Ruleset "main: security gates" | Required checks `security/threat-model`, `security/approval-gate`, `sast`, `secrets`, `dependencies`, `build`, `security-tests`, `api-tests`, plus 1 approving review |
 
 ## Stages
 
@@ -219,4 +219,4 @@ This workflow runs the PR's own code, so it uses `pull_request` with a read-only
 | 1 | Requirement → security acceptance criteria, using the context model | ✅ done: issue #2 |
 | 2 | Design → threat model (STRIDE + Jev) | ✅ done: PR #3 |
 | 3 | Code → approval gate; the Rupi-yeah app (Next.js) | ✅ built: app in PR #5 |
-| 4 | Code security gate: SAST, secrets, dependencies, build, security tests, design-conformance agent | 🔨 layers 1–4 done |
+| 4 | Code security gate: SAST, secrets, dependencies, build, security tests, API tests, design-conformance agent | 🔨 layers 1–6 done |
