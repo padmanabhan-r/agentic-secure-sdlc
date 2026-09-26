@@ -153,6 +153,18 @@ def can_write(repo: str, user: str) -> bool:
     return perm in ("admin", "maintain", "write")
 
 
+def reviewed_latest(repo: str, number: int, reviewer: str) -> bool:
+    """True if the reviewer commented after the latest security review.
+
+    Code checks who commented and when. The comment text never reaches the LLM.
+    """
+    comments = gh("GET", f"/repos/{repo}/issues/{number}/comments", params={"per_page": 100})
+    latest = max((c["created_at"] for c in comments if MARKER in c["body"]), default=None)
+    if latest is None:
+        return False
+    return any(c["user"]["login"] == reviewer and c["created_at"] > latest for c in comments)
+
+
 def run_review(repo: str, issue: dict, reason: str):
     post_review(repo, issue["number"], render(review(issue["title"], issue["body"] or "")), reason)
     print(f"Posted review on #{issue['number']}")
@@ -179,6 +191,16 @@ def handle(event_name: str, event: dict, repo: str):
             if actor not in reviewers:
                 remove_label(repo, number, APPROVED)
                 comment(repo, number, f"@{actor} is not a security reviewer, so `{APPROVED}` was removed.")
+                return
+            if not reviewed_latest(repo, number, actor):
+                remove_label(repo, number, APPROVED)
+                comment(
+                    repo,
+                    number,
+                    f"@{actor}, `{APPROVED}` was removed: post your review first, as a comment after the latest "
+                    "security review. Say which rules you accept, edit or reject, and anything missing. "
+                    "Then add the label again.",
+                )
                 return
             if NEEDS_REVIEW in labels:
                 remove_label(repo, number, NEEDS_REVIEW)

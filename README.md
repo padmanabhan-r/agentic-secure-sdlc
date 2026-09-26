@@ -37,7 +37,7 @@ flowchart TD
 | Label | Who adds it | What it triggers |
 |---|---|---|
 | 🔴 `needs-security-review` | PM | The agent reviews the requirement. While it is on, every edit to the issue re-runs the agent. |
-| 🟢 `security-approved` | Security reviewer only | Sign-off. The agent stops. If anyone else adds it, it is removed. |
+| 🟢 `security-approved` | Security reviewer only | Sign-off. The agent stops. Removed again if anyone else adds it, or if the reviewer has not first posted a review comment after the latest security review. |
 
 Comments never trigger the agent, and it never reads them. An edit by someone who is not a collaborator
 still resets the approval, but does not re-run the agent.
