@@ -69,6 +69,13 @@ export function ClaimPanel({ claim, viewer, csrf, decide = true }: { claim: Clai
         </section>
       )}
 
+      {claim.resubmitNote && (
+        <section className="flex flex-col gap-1">
+          <h3 className="text-sm font-semibold">Resubmitted{claim.resubmissions && claim.resubmissions > 1 ? ` (${claim.resubmissions} times)` : ""}</h3>
+          <p className="whitespace-pre-wrap text-[0.9375rem]">{claim.resubmitNote}</p>
+        </section>
+      )}
+
       {claim.comment && (
         <section className="flex flex-col gap-1">
           <h3 className="text-sm font-semibold">Comment</h3>

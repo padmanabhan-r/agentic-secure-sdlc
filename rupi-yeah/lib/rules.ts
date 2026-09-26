@@ -98,3 +98,20 @@ export function queueFor(user: User, claims: Claim[]): Claim[] {
 }
 
 export const COMMENT_MAX = 500;
+
+/**
+ * Once a claim is approved (by the manager or a second approver), its amount and details are locked.
+ * Only the submitter may change them, and only while the claim is pending or after it was rejected.
+ */
+export function canEdit(user: User, claim: Claim): { ok: boolean; reason?: string } {
+  if (claim.submitterId !== user.id) return { ok: false, reason: "Only the person who claimed it can change a claim" };
+  if (claim.status === "awaiting_second" || claim.status === "ready") return { ok: false, reason: "An approved claim is locked and cannot change" };
+  return { ok: true };
+}
+
+/** A rejected claim can be resubmitted by its submitter, with a note on what is new; it restarts approval. */
+export function canResubmit(user: User, claim: Claim): { ok: boolean; reason?: string } {
+  if (claim.submitterId !== user.id) return { ok: false, reason: "Only the person who claimed it can resubmit it" };
+  if (claim.status !== "rejected") return { ok: false, reason: "Only a rejected claim can be resubmitted" };
+  return { ok: true };
+}

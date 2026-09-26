@@ -27,7 +27,7 @@ const SEED_CLAIMS: Claim[] = [
   { id: "C-2046", submitterId: "arjun", merchant: "Ola", purpose: "Office to the Andheri client site", category: "Travel", amount: 640_00, spentOn: "2026-09-22", submittedAt: "2026-09-22T19:02:00+05:30", status: "pending" },
   { id: "C-2047", submitterId: "meena", merchant: "Taj Coromandel", purpose: "Client offsite, 14 guests", category: "Events", amount: 64_500_00, spentOn: "2026-09-12", submittedAt: "2026-09-13T12:00:00+05:30", status: "awaiting_second", firstApproverId: "vikram" },
   { id: "C-2038", submitterId: "asha", merchant: "Rapido", purpose: "Client visit, T. Nagar", category: "Travel", amount: 310_00, spentOn: "2026-09-09", submittedAt: "2026-09-09T18:20:00+05:30", status: "ready", firstApproverId: "ravi" },
-  { id: "C-2039", submitterId: "kiran", merchant: "Amazon", purpose: "Personal headphones", category: "Equipment", amount: 8_990_00, spentOn: "2026-09-10", submittedAt: "2026-09-10T21:45:00+05:30", status: "rejected", rejectedById: "ravi", comment: "Personal purchase, not reimbursable." },
+  { id: "C-2039", submitterId: "asha", merchant: "Amazon", purpose: "Headphones for client calls", category: "Equipment", amount: 8_990_00, spentOn: "2026-09-10", submittedAt: "2026-09-10T21:45:00+05:30", status: "rejected", rejectedById: "ravi", comment: "No invoice attached. Add the GST invoice and resubmit." },
 ];
 
 export function seedState(): DemoState {
@@ -35,7 +35,7 @@ export function seedState(): DemoState {
     claims: structuredClone(SEED_CLAIMS),
     audit: [
       { id: 1, at: "2026-09-11T10:02:00+05:30", actorId: "ravi", action: "approved", claimId: "C-2038", from: "pending", to: "ready" },
-      { id: 2, at: "2026-09-11T10:04:00+05:30", actorId: "ravi", action: "rejected", claimId: "C-2039", from: "pending", to: "rejected", comment: "Personal purchase, not reimbursable." },
+      { id: 2, at: "2026-09-11T10:04:00+05:30", actorId: "ravi", action: "rejected", claimId: "C-2039", from: "pending", to: "rejected", comment: "No invoice attached. Add the GST invoice and resubmit." },
       { id: 3, at: "2026-09-14T09:30:00+05:30", actorId: "vikram", action: "approved", claimId: "C-2047", from: "pending", to: "awaiting_second" },
     ],
     receiptLinks: [],

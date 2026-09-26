@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClaimActions } from "@/components/ClaimActions";
 import { ClaimPanel } from "@/components/ClaimPanel";
 import { Ledger } from "@/components/Ledger";
 import { SECOND_APPROVAL_LIMIT, userById } from "@/lib/data";
@@ -74,6 +75,9 @@ export default async function ClaimsPage({ searchParams }: PageProps<"/claims">)
         {selected && (
           <>
             <ClaimPanel claim={selected} viewer={user} csrf={csrf} decide={false} />
+            <div className="px-5 pb-6 sm:px-7">
+              <ClaimActions key={`${selected.id}-${selected.status}`} claimId={selected.id} status={selected.status} csrf={csrf} amount={selected.amount} purpose={selected.purpose} />
+            </div>
             <Trail claim={selected} />
           </>
         )}

@@ -10,7 +10,7 @@ vi.mock("server-only", () => ({}));
 vi.mock("next/headers", async () => ({ cookies: async () => (await import("./fakes")).cookieStore }));
 
 const { seedState, SECOND_APPROVAL_LIMIT, userById } = await import("@/lib/data");
-const { canView, COMMENT_MAX, evaluate, queueFor } = await import("@/lib/rules");
+const { canEdit, canResubmit, canView, COMMENT_MAX, evaluate, queueFor } = await import("@/lib/rules");
 const { cookieOptions } = await import("@/lib/session");
 
 const claims = seedState().claims;
@@ -89,5 +89,29 @@ describe("sessions (design decision 7)", () => {
   });
   it("expires an idle session within 30 minutes", () => {
     expect(cookieOptions.maxAge).toBeLessThanOrEqual(30 * 60);
+  });
+});
+
+describe("approved claims are locked (context model rule)", () => {
+  it("refuses changes once the manager has approved", () => {
+    expect(canEdit(user("asha"), claim("C-2038")).ok).toBe(false);
+  });
+  it("refuses changes while waiting for the second approver", () => {
+    expect(canEdit(user("meena"), claim("C-2047")).ok).toBe(false);
+  });
+  it("lets the submitter change a pending or rejected claim, and nobody else", () => {
+    expect(canEdit(user("asha"), claim("C-2041")).ok).toBe(true);
+    expect(canEdit(user("asha"), claim("C-2039")).ok).toBe(true);
+    expect(canEdit(user("ravi"), claim("C-2041")).ok).toBe(false);
+  });
+});
+
+describe("resubmission (context model rule)", () => {
+  it("lets the submitter resubmit a rejected claim", () => {
+    expect(canResubmit(user("asha"), claim("C-2039")).ok).toBe(true);
+  });
+  it("refuses resubmitting a claim that was not rejected, or someone else's", () => {
+    expect(canResubmit(user("asha"), claim("C-2041")).ok).toBe(false);
+    expect(canResubmit(user("ravi"), claim("C-2039")).ok).toBe(false);
   });
 });

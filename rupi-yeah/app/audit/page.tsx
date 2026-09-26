@@ -12,6 +12,8 @@ const WHAT: Record<AuditEntry["action"], string> = {
   approved: "Approved",
   second_approved: "Gave second approval",
   rejected: "Rejected",
+  resubmitted: "Resubmitted with new proof",
+  edited: "Changed the claim",
   blocked: "Blocked by the server",
   receipt_viewed: "Opened the receipt",
   receipt_refused: "Receipt link refused",

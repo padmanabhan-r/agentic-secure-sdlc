@@ -10,7 +10,7 @@ vi.mock("next/headers", async () => ({ cookies: async () => (await import("./fak
 vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 vi.mock("next/navigation", () => ({ redirect: (to: string) => { throw new Error(`REDIRECT ${to}`); } }));
 
-const { decide, receiptLink, resetDemo } = await import("@/app/actions");
+const { decide, editClaim, receiptLink, resetDemo, resubmit } = await import("@/app/actions");
 const { GET: openReceipt } = await import("@/app/api/receipts/[token]/route");
 const { loadState, saveState } = await import("@/lib/store");
 const { session } = await import("@/lib/session");
@@ -142,5 +142,55 @@ describe("receipt links: single-use, 5 minutes, bound to the viewer (design deci
     const res = await receipt((await receiptLink("C-2041", csrf))!);
     expect(res.headers.get("cache-control")).toMatch(/no-store/);
     expect(res.headers.get("x-content-type-options")).toBe("nosniff");
+  });
+});
+
+describe("approved claims are locked (context model rule)", () => {
+  it("refuses and audits a change to an approved claim", async () => {
+    const { sandbox, csrf } = signIn("asha");
+    const r = await editClaim(null, form({ csrf, claimId: "C-2038", amount: "31000", purpose: "Client visit" }));
+    expect(r?.ok).toBe(false);
+    expect((await loadState(sandbox)).claims.find((c) => c.id === "C-2038")!.amount).toBe(310_00);
+    expect(await lastAudit(sandbox)).toMatchObject({ actorId: "asha", action: "blocked", claimId: "C-2038" });
+  });
+  it("refuses a change after approval even when the approver tries it", async () => {
+    const { sandbox, csrf } = signIn("ravi");
+    await decide(null, form({ csrf, claimId: "C-2041", action: "approve" }));
+    signIn("asha", sandbox, csrf);
+    const r = await editClaim(null, form({ csrf, claimId: "C-2041", amount: "99999", purpose: "Airport" }));
+    expect(r?.ok).toBe(false);
+    expect((await loadState(sandbox)).claims.find((c) => c.id === "C-2041")!.amount).toBe(1_240_00);
+  });
+  it("lets the submitter correct a pending claim, audited with the old value", async () => {
+    const { sandbox, csrf } = signIn("asha");
+    const r = await editClaim(null, form({ csrf, claimId: "C-2044", amount: "3200", purpose: "Team lunch after the quarter close" }));
+    expect(r?.ok).toBe(true);
+    expect(await lastAudit(sandbox)).toMatchObject({ action: "edited", comment: expect.stringContaining("3,460") });
+  });
+  it("refuses a change by anyone but the submitter", async () => {
+    const { csrf } = signIn("ravi");
+    expect((await editClaim(null, form({ csrf, claimId: "C-2041", amount: "1", purpose: "x" })))?.ok).toBe(false);
+  });
+});
+
+describe("resubmission (context model rule)", () => {
+  it("sends a rejected claim back to the start of approval, with the note, audited", async () => {
+    const { sandbox, csrf } = signIn("asha");
+    const r = await resubmit(null, form({ csrf, claimId: "C-2039", note: "Added the GST invoice" }));
+    expect(r?.ok).toBe(true);
+    const c = (await loadState(sandbox)).claims.find((c) => c.id === "C-2039")!;
+    expect(c).toMatchObject({ status: "pending", resubmitNote: "Added the GST invoice", firstApproverId: undefined, rejectedById: undefined });
+    expect(await lastAudit(sandbox)).toMatchObject({ action: "resubmitted", from: "rejected", to: "pending" });
+  });
+  it("refuses a resubmission with no note on what is new", async () => {
+    const { sandbox, csrf } = signIn("asha");
+    expect((await resubmit(null, form({ csrf, claimId: "C-2039", note: "" })))?.ok).toBe(false);
+    expect(await statusOf(sandbox, "C-2039")).toBe("rejected");
+  });
+  it("refuses resubmitting someone else's claim, or one that was not rejected", async () => {
+    const { sandbox, csrf } = signIn("ravi");
+    expect((await resubmit(null, form({ csrf, claimId: "C-2039", note: "x" })))?.ok).toBe(false);
+    signIn("asha", sandbox, csrf);
+    expect((await resubmit(null, form({ csrf, claimId: "C-2041", note: "x" })))?.ok).toBe(false);
   });
 });

@@ -29,9 +29,12 @@ export type Claim = {
   secondApproverId?: string;
   rejectedById?: string;
   comment?: string;
+  /** The submitter's note on what changed, when a rejected claim is resubmitted. */
+  resubmitNote?: string;
+  resubmissions?: number;
 };
 
-export type AuditAction = "approved" | "second_approved" | "rejected" | "blocked" | "receipt_viewed" | "receipt_refused";
+export type AuditAction = "approved" | "second_approved" | "rejected" | "resubmitted" | "edited" | "blocked" | "receipt_viewed" | "receipt_refused";
 
 export type AuditEntry = {
   id: number;

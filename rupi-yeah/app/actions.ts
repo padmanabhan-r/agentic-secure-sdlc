@@ -4,9 +4,10 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { userById } from "@/lib/data";
-import { canView, COMMENT_MAX, evaluate } from "@/lib/rules";
+import { canEdit, canResubmit, canView, COMMENT_MAX, evaluate } from "@/lib/rules";
 import { cookieOptions, csrfOk, session, SIGN_IN_USERS, USER_COOKIE } from "@/lib/session";
 import { loadState, resetState, saveState } from "@/lib/store";
+import { formatRupees } from "@/lib/money";
 import type { AuditEntry, DemoState } from "@/lib/types";
 
 export type DecisionResult = { ok: boolean; message: string } | null;
@@ -97,6 +98,63 @@ export async function receiptLink(claimId: string, token: string): Promise<strin
   state.receiptLinks = [...state.receiptLinks.filter((l) => l.expiresAt > Date.now()), link];
   await saveState(sandbox, state);
   return `/api/receipts/${link.token}`;
+}
+
+/** Change a claim's amount or purpose. Refused once the claim has been approved (context model rule). */
+export async function editClaim(_prev: DecisionResult, formData: FormData): Promise<DecisionResult> {
+  const { user, sandbox, csrf } = await session();
+  if (!csrfOk(csrf, formData.get("csrf"))) return REFUSED;
+  const claimId = String(formData.get("claimId") ?? "");
+  const rupees = Number(String(formData.get("amount") ?? "").replace(/[,₹\s]/g, ""));
+  const purpose = String(formData.get("purpose") ?? "").trim();
+  if (!Number.isFinite(rupees) || rupees <= 0 || rupees > 10_00_000) return { ok: false, message: "Enter an amount between ₹1 and ₹10,00,000." };
+  if (!purpose || purpose.length > COMMENT_MAX) return { ok: false, message: `Describe the purpose in under ${COMMENT_MAX} characters.` };
+
+  const state = await loadState(sandbox);
+  const claim = state.claims.find((c) => c.id === claimId);
+  const now = new Date().toISOString();
+  const allowed = claim && canView(user, claim) ? canEdit(user, claim) : { ok: false, reason: "Not in your approval chain" };
+  if (!claim || !allowed.ok) {
+    state.audit.push({ id: nextAuditId(state), at: now, actorId: user.id, action: "blocked", claimId, rule: allowed.reason });
+    await saveState(sandbox, state);
+    return { ok: false, message: `Blocked: ${allowed.reason}.` };
+  }
+  const before = `${formatRupees(claim.amount)}, ${claim.purpose}`;
+  claim.amount = Math.round(rupees * 100);
+  claim.purpose = purpose;
+  state.audit.push({ id: nextAuditId(state), at: now, actorId: user.id, action: "edited", claimId, from: claim.status, to: claim.status, comment: `Was ${before}` });
+  await saveState(sandbox, state);
+  revalidatePath("/", "layout");
+  return { ok: true, message: `Updated ${claim.id}.` };
+}
+
+/** Resubmit a rejected claim with a note on the new proof. It goes back to the start of approval. */
+export async function resubmit(_prev: DecisionResult, formData: FormData): Promise<DecisionResult> {
+  const { user, sandbox, csrf } = await session();
+  if (!csrfOk(csrf, formData.get("csrf"))) return REFUSED;
+  const claimId = String(formData.get("claimId") ?? "");
+  const note = String(formData.get("note") ?? "").trim();
+  if (!note) return { ok: false, message: "Say what is new: which proof you added or what you corrected." };
+  if (note.length > COMMENT_MAX) return { ok: false, message: `Keep the note under ${COMMENT_MAX} characters.` };
+
+  const state = await loadState(sandbox);
+  const claim = state.claims.find((c) => c.id === claimId);
+  const now = new Date().toISOString();
+  const allowed = claim && canView(user, claim) ? canResubmit(user, claim) : { ok: false, reason: "Not in your approval chain" };
+  if (!claim || !allowed.ok) {
+    state.audit.push({ id: nextAuditId(state), at: now, actorId: user.id, action: "blocked", claimId, rule: allowed.reason });
+    await saveState(sandbox, state);
+    return { ok: false, message: `Blocked: ${allowed.reason}.` };
+  }
+  claim.status = "pending";
+  claim.firstApproverId = claim.secondApproverId = claim.rejectedById = undefined;
+  claim.resubmitNote = note;
+  claim.resubmissions = (claim.resubmissions ?? 0) + 1;
+  claim.submittedAt = now;
+  state.audit.push({ id: nextAuditId(state), at: now, actorId: user.id, action: "resubmitted", claimId, from: "rejected", to: "pending", comment: note });
+  await saveState(sandbox, state);
+  revalidatePath("/", "layout");
+  return { ok: true, message: `Resubmitted ${claim.id}. It is back with your manager.` };
 }
 
 export async function resetDemo(formData: FormData) {
