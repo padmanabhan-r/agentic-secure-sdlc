@@ -7,12 +7,16 @@ rules:
     severity: ERROR
     languages: [typescript]
     paths:
-      include: ["rupi-yeah/app/actions.ts"]
+      include: ["/rupi-yeah/app/actions.ts"]
     patterns:
       - pattern: |
           export async function $F(...) { ... }
       - pattern-not: |
-          export async function $F(...) { ... csrfOk(...) ... }
+          export async function $F(...) {
+            ...
+            if (<... csrfOk(...) ...>) $STMT;
+            ...
+          }
 
   - id: identity-from-request
     message: >-
@@ -21,7 +25,7 @@ rules:
     severity: ERROR
     languages: [typescript]
     paths:
-      include: ["rupi-yeah/"]
+      include: ["/rupi-yeah/"]
     pattern-either:
       - pattern: $FD.get("userId")
       - pattern: $FD.get("actorId")
@@ -36,7 +40,7 @@ rules:
     severity: ERROR
     languages: [typescript]
     paths:
-      include: ["rupi-yeah/"]
+      include: ["/rupi-yeah/"]
     pattern: <$EL dangerouslySetInnerHTML={...} ... />
 
   - id: cookie-without-shared-options
@@ -46,7 +50,7 @@ rules:
     severity: ERROR
     languages: [typescript]
     paths:
-      include: ["rupi-yeah/app/"]
+      include: ["/rupi-yeah/app/"]
     patterns:
       - pattern: $JAR.set($NAME, $VALUE, $OPTS)
       - pattern-not: $JAR.set($NAME, $VALUE, cookieOptions)
