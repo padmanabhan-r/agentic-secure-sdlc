@@ -1,0 +1,52 @@
+# Design decisions from docs/design/expense-approval.md, enforced as SAST rules.
+rules:
+  - id: server-action-without-csrf-check
+    message: >-
+      Every server action must check the anti-CSRF token with csrfOk() before doing anything
+      (design decision 8).
+    severity: ERROR
+    languages: [typescript]
+    paths:
+      include: ["rupi-yeah/app/actions.ts"]
+    patterns:
+      - pattern: |
+          export async function $F(...) { ... }
+      - pattern-not: |
+          export async function $F(...) { ... csrfOk(...) ... }
+
+  - id: identity-from-request
+    message: >-
+      The caller's identity comes from the session cookie, never from the request
+      (design decision 2). Use session() instead of reading a user id from the form or URL.
+    severity: ERROR
+    languages: [typescript]
+    paths:
+      include: ["rupi-yeah/"]
+    pattern-either:
+      - pattern: $FD.get("userId")
+      - pattern: $FD.get("actorId")
+      - pattern: $FD.get("submitterId")
+      - pattern: $FD.get("viewerId")
+      - pattern: $FD.get("approverId")
+
+  - id: html-from-data
+    message: >-
+      Comments and claim text are rendered as text, never as HTML (design decision 9).
+      dangerouslySetInnerHTML is not allowed.
+    severity: ERROR
+    languages: [typescript]
+    paths:
+      include: ["rupi-yeah/"]
+    pattern: <$EL dangerouslySetInnerHTML={...} ... />
+
+  - id: cookie-without-shared-options
+    message: >-
+      Session cookies must be HttpOnly, Secure and SameSite=Strict (design decision 7):
+      set them with cookieOptions from lib/session.ts.
+    severity: ERROR
+    languages: [typescript]
+    paths:
+      include: ["rupi-yeah/app/"]
+    patterns:
+      - pattern: $JAR.set($NAME, $VALUE, $OPTS)
+      - pattern-not: $JAR.set($NAME, $VALUE, cookieOptions)
