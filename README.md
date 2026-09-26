@@ -132,8 +132,9 @@ The repo admin can bypass the ruleset. GitHub logs every bypass.
 Every re-run posts a new revision at the bottom of the PR. Older revisions stay, collapsed, so the whole
 history is on record.
 
-**Status:** design PR #3 has its threat model (Revision 5, all ✅). Next: the security reviewer comments
-and adds 🟢, the tech lead approves, and the PR merges.
+**Status: done.** PR #3: threat model Revision 5, reviewed and approved by the security reviewer
+(two items accepted as risk for v1, to fix before general availability), approved by the tech lead,
+merged. The design is on `main`.
 
 ## What is where
 
@@ -154,6 +155,6 @@ and adds 🟢, the tech lead approves, and the PR merges.
 | Stage | SDLC step | Status |
 |---|---|---|
 | 1 | Requirement → security acceptance criteria, using the context model | ✅ done: issue #2 |
-| 2 | Design → threat model (STRIDE + Jev) | 🔨 almost done: PR #3 waiting for sign-off and merge |
+| 2 | Design → threat model (STRIDE + Jev) | ✅ done: PR #3 |
 | 3 | Code → the Rupi-yeah app (API + UI); build gate: a code PR merges only if its requirement and design are approved | next |
 | 4 | PR security agent: the first real agent, with tools | later |
