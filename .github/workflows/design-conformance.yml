@@ -1,0 +1,45 @@
+name: Design conformance
+
+# The design-conformance agent: is every approved design decision enforced in the PR's code?
+# Sets the required status `security/design-conformance`.
+#
+# pull_request_target runs from main, with secrets. That is safe only because the PR's code is
+# never checked out or run: the agent reads it through the API, as text, with read-only tools.
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, labeled, unlabeled]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  statuses: write
+
+concurrency:
+  group: design-conformance-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  conformance:
+    if: >-
+      github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize' ||
+      github.event.label.name == 'design-exceptions-approved'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main   # our agent, design and context model, never the PR's
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r agents/requirements.txt
+      - name: Design-conformance agent
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AGENT_ENABLED: ${{ vars.AGENT_ENABLED }}
+          SECURITY_REVIEWERS: ${{ vars.SECURITY_REVIEWERS }}
+          PYTHONPATH: agents
+        run: python agents/conformance_agent.py
