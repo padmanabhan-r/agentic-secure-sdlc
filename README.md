@@ -136,21 +136,21 @@ history is on record.
 (two items accepted as risk for v1, to fix before general availability), approved by the tech lead,
 merged. The design is on `main`.
 
-## Stage 3: code → build gate
+## Stage 3: code → approval gate
 
 Development means product code under `rupi-yeah/`. It can only reach `main` once its requirement and its
 design have both been approved.
 
 ```mermaid
 flowchart TD
-    A["👩‍💻 Engineer opens a code PR<br/>'Closes #2'"] --> B{"🚦 Build gate"}
+    A["👩‍💻 Engineer opens a code PR<br/>'Closes #2'"] --> B{"🚦 Approval gate"}
     B -->|"requirement not 🟢<br/>or design not approved"| C["⛔ Merge blocked"]
     B -->|"requirement 🟢 + design merged<br/>with 🟢 threat-model-approved"| D["👍 Tech lead approves"]
     D --> E["✅ Merged"]
     F["📝 Requirement edited later:<br/>approval resets"] -.->|"gate re-checked:<br/>turns red"| B
 ```
 
-**The gate is code, not an LLM.** It sets the required status check `security/build-gate`:
+**The gate is code, not an LLM.** It sets the required status check `security/approval-gate`:
 
 | The PR... | Gate |
 |---|---|
@@ -165,7 +165,7 @@ that closes it, and the gate turns red again. Code can be written any time; it c
 
 **Status:** the gate is built, and the app's PR #5 passes it.
 
-## Stage 4: the PR security gate
+## Stage 4: the code security gate
 
 Before code reaches `main`, every security feature in the design must be proven in the code. The gate
 checks in layers, cheapest and most certain first; the LLM comes last.
@@ -205,12 +205,12 @@ This workflow runs the PR's own code, so it uses `pull_request` with a read-only
 | `docs/design/` | Designs, one per feature. Input to the threat model. |
 | `agents/threat_model_agent.py` | The threat-model step and its flow |
 | `.github/workflows/threat-model.yml` | Runs it on design PR events |
-| `agents/gate.py`, `.github/workflows/build-gate.yml` | The Stage 3 build gate |
-| `.github/workflows/pr-security.yml`, `security/semgrep/` | The Stage 4 PR security gate |
+| `agents/approval_gate.py`, `.github/workflows/approval-gate.yml` | The Stage 3 approval gate |
+| `.github/workflows/code-security.yml`, `security/semgrep/` | The Stage 4 code security gate |
 | `rupi-yeah/` | The Rupi-yeah app (Next.js), with its `PRODUCT.md` and `DESIGN.md` |
 | Repo secrets | `OPENAI_API_KEY` (threats and criteria), `OPENROUTER_API_KEY` (Jev) |
 | Repo variables | `SECURITY_REVIEWERS` (who may approve), `AGENT_ENABLED` (kill switch) |
-| Ruleset "main: security gates" | Required checks `security/threat-model`, `security/build-gate`, `sast`, `secrets`, `dependencies`, `build`, plus 1 approving review |
+| Ruleset "main: security gates" | Required checks `security/threat-model`, `security/approval-gate`, `sast`, `secrets`, `dependencies`, `build`, plus 1 approving review |
 
 ## Stages
 
@@ -218,5 +218,5 @@ This workflow runs the PR's own code, so it uses `pull_request` with a read-only
 |---|---|---|
 | 1 | Requirement → security acceptance criteria, using the context model | ✅ done: issue #2 |
 | 2 | Design → threat model (STRIDE + Jev) | ✅ done: PR #3 |
-| 3 | Code → build gate; the Rupi-yeah app (Next.js) | ✅ built: app in PR #5 |
-| 4 | PR security gate: SAST, secrets, dependencies, build, security tests, design-conformance agent | 🔨 layers 1–4 done |
+| 3 | Code → approval gate; the Rupi-yeah app (Next.js) | ✅ built: app in PR #5 |
+| 4 | Code security gate: SAST, secrets, dependencies, build, security tests, design-conformance agent | 🔨 layers 1–4 done |

@@ -1,6 +1,6 @@
-"""Build gate: product code may merge only once its requirement and its design are approved.
+"""Approval gate: product code may merge only once its requirement and its design are approved.
 
-Sets the commit status `security/build-gate` on a pull request's head commit. The ruleset
+Sets the commit status `security/approval-gate` on a pull request's head commit. The ruleset
 on main requires it, so a red status blocks the merge.
 
 A PR that changes product code (under rupi-yeah/) passes only if it closes at least one
@@ -19,7 +19,7 @@ import sys
 import requests
 
 GITHUB_API = "https://api.github.com"
-STATUS = "security/build-gate"
+STATUS = "security/approval-gate"
 PRODUCT_DIR = "rupi-yeah/"
 REQ_APPROVED = "security-approved"
 TM_APPROVED = "threat-model-approved"

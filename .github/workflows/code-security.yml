@@ -1,4 +1,4 @@
-name: PR security
+name: Code security gate
 
 # The deterministic layers of the pre-merge gate: SAST, secrets, dependencies, build.
 # Each job is a required check on main.

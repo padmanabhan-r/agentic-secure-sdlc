@@ -1,6 +1,6 @@
-name: Build gate
+name: Approval gate
 
-# The status check `security/build-gate`: a PR that changes product code (rupi-yeah/) is red
+# The status check `security/approval-gate`: a PR that changes product code (rupi-yeah/) is red
 # until its requirement is security-approved and its design is threat-model-approved and merged.
 # A ruleset on main requires it.
 #
@@ -31,4 +31,4 @@ jobs:
       - name: Are the requirement and design approved?
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python agents/gate.py ${{ github.event.pull_request.number }}
+        run: python agents/approval_gate.py ${{ github.event.pull_request.number }}
