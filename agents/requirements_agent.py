@@ -29,7 +29,7 @@ from openai import OpenAI
 from pydantic import BaseModel, Field
 
 MODEL = os.environ.get("AGENT_MODEL", "gpt-5.4-mini-2026-03-17")
-CONTEXT_MODEL = Path(os.environ.get("CONTEXT_MODEL", "security/context/expense-reimbursement.yaml"))
+CONTEXT_MODEL = Path(os.environ.get("CONTEXT_MODEL", "security/context/rupi-yeah.yaml"))
 MARKER = "<!-- security-requirements-agent -->"
 GITHUB_API = "https://api.github.com"
 NEEDS_REVIEW = "needs-security-review"
@@ -48,7 +48,7 @@ class Review(BaseModel):
     )
 
 
-SYSTEM = """You are a product security engineer at Acme, which builds an expense reimbursement product. You review ONE product
+SYSTEM = """You are a product security engineer on Rupi-yeah, an expense reimbursement app. You review ONE product
 requirement before any code exists, and you write the security acceptance criteria the
 engineering team must meet.
 

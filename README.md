@@ -5,7 +5,7 @@ following the order a feature takes: requirement, design, code, CI, release, pro
 
 ## The scenario
 
-**Acme** builds an **expense reimbursement product** that other companies use: their employees submit
+**Rupi-yeah** is an **expense reimbursement app** that other companies use: their employees submit
 expense claims, their managers approve them, and approved claims are reimbursed.
 
 ## Who does what
@@ -77,7 +77,7 @@ The design is [`docs/design/expense-approval.md`](docs/design/expense-approval.m
 | F1 | Browser → Identity provider | Logging in: stolen passwords, fake login pages |
 | F2 | Browser → Approvals API | Every approve and reject goes through here |
 | F5 | Browser → Receipt storage | Receipts and bank statements: personal data |
-| F7 | Approvals API → Bank payout service | Real money leaves Acme |
+| F7 | Approvals API → Bank payout service | Real money leaves Rupi-yeah |
 
 ### The flow
 
@@ -96,7 +96,7 @@ flowchart TD
 
 | Path | What it is |
 |---|---|
-| `security/context/expense-reimbursement.yaml` | The product security context model: data sensitivity, roles, rules, limits. Owned by the security reviewer (`.github/CODEOWNERS`). |
+| `security/context/rupi-yeah.yaml` | The product security context model: data sensitivity, roles, rules, limits. Owned by the security reviewer (`.github/CODEOWNERS`). |
 | `agents/requirements_agent.py` | The requirements agent and the flow above |
 | `.github/workflows/requirements-review.yml` | Runs the flow on issue events |
 | `docs/design/` | Designs, one per feature. Input to the threat model. |

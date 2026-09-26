@@ -1,9 +1,9 @@
-# Product security context model: expense reimbursement.
+# Product security context model: Rupi-yeah (expense reimbursement).
 #
 # What security knows about this product, written down once so every agent uses the
 # same facts. Owned by the security reviewers; changes go through a reviewed PR.
 
-product: expense-reimbursement
+product: rupi-yeah
 description: Employees of customer companies submit expense claims; their managers approve them; approved claims are reimbursed.
 
 # 1 = money moves or personal data is exposed. Tier 1 needs a security reviewer's sign-off.
