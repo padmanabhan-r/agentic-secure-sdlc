@@ -191,7 +191,7 @@ flowchart LR
 | 4 | `build` | Types, lint and production build pass | ✅ built |
 | 5 | `security-tests` | Each design decision and context-model rule as a test that fails if the code stops enforcing it. One reads the context model YAML and checks the code uses the same ₹50,000 limit. **On its first run it caught a real gap:** the design says sessions expire after 30 idle minutes, the code said 7 days. | ✅ built |
 | 6 | `api-tests` | The real server actions and receipt endpoint, called the way an attacker would: no CSRF token, a forged user id, another team's claim, self-approval, a reused, expired or someone else's receipt link. All refused, all audited. (With a REST API and an OpenAPI spec, 42Crunch would add a spec audit and a conformance scan here.) | ✅ built |
-| 7 | design conformance | An agent with tools finds the code that enforces each design decision; Jev judges it | next |
+| 7 | `security/design-conformance` | **The lab's one real agent.** It builds a checklist from the approved design decisions and the context model rules, then, with read-only tools (`list_files`, `search_code`, `read_file`) and at most 30 tool calls, finds the code that enforces each item. Code fetches those lines itself and **Jev** judges each one. Anything not ✅ keeps the check red until the code is fixed or a security reviewer comments and adds `design-exceptions-approved`. On its first run it found two real gaps, the resubmit flow (R5) and the post-approval lock (R6), which were then built and tested; Jev also overruled the agent when it wrongly claimed one was implemented. Open: rules enforced across several files still come back ❓, and runs vary by an item or two. The next step is an eval set, not more tuning by eye. | ✅ built |
 
 This workflow runs the PR's own code, so it uses `pull_request` with a read-only token and no secrets.
 
@@ -207,10 +207,11 @@ This workflow runs the PR's own code, so it uses `pull_request` with a read-only
 | `.github/workflows/threat-model.yml` | Runs it on design PR events |
 | `agents/approval_gate.py`, `.github/workflows/approval-gate.yml` | The Stage 3 approval gate |
 | `.github/workflows/code-security.yml`, `security/semgrep/` | The Stage 4 code security gate |
+| `agents/conformance_agent.py`, `.github/workflows/design-conformance.yml` | The design-conformance agent |
 | `rupi-yeah/` | The Rupi-yeah app (Next.js), with its `PRODUCT.md` and `DESIGN.md` |
 | Repo secrets | `OPENAI_API_KEY` (threats and criteria), `OPENROUTER_API_KEY` (Jev) |
 | Repo variables | `SECURITY_REVIEWERS` (who may approve), `AGENT_ENABLED` (kill switch) |
-| Ruleset "main: security gates" | Required checks `security/threat-model`, `security/approval-gate`, `sast`, `secrets`, `dependencies`, `build`, `security-tests`, `api-tests`, plus 1 approving review |
+| Ruleset "main: security gates" | Required checks `security/threat-model`, `security/approval-gate`, `sast`, `secrets`, `dependencies`, `build`, `security-tests`, `api-tests`, `security/design-conformance`, plus 1 approving review |
 
 ## Stages
 
@@ -219,4 +220,4 @@ This workflow runs the PR's own code, so it uses `pull_request` with a read-only
 | 1 | Requirement → security acceptance criteria, using the context model | ✅ done: issue #2 |
 | 2 | Design → threat model (STRIDE + Jev) | ✅ done: PR #3 |
 | 3 | Code → approval gate; the Rupi-yeah app (Next.js) | ✅ built: app in PR #5 |
-| 4 | Code security gate: SAST, secrets, dependencies, build, security tests, API tests, design-conformance agent | 🔨 layers 1–6 done |
+| 4 | Code security gate: SAST, secrets, dependencies, build, security tests, API tests, design-conformance agent | ✅ built; PR #5 is its first test |
