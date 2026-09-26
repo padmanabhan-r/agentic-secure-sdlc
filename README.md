@@ -84,12 +84,24 @@ The design is [`docs/design/expense-approval.md`](docs/design/expense-approval.m
 
 ```mermaid
 flowchart TD
-    A["👩‍💻 Engineer opens a PR<br/>with the design doc"] -->|"engineer adds label<br/>🔴 needs-threat-model"| B["🤖 Reads the design<br/>+ requirement + context model"]
-    B --> C["🤖 Posts a STRIDE threat model<br/>for each boundary-crossing flow"]
-    C --> D["🛡️ Security reviewer comments:<br/>accept / edit / reject each threat"]
-    D -->|"reviewer adds label<br/>🟢 threat-model-approved"| E["✅ Design merged:<br/>ready to code"]
-    E -.->|"design changed later:<br/>approval resets to 🔴"| B
+    A["👩‍💻 Engineer opens a PR<br/>with the design doc"] -->|"engineer adds label<br/>🔴 needs-threat-model"| B["🤖 LLM writes STRIDE threats<br/>for every boundary flow"]
+    B --> C["⚖️ Jev checks each fix:<br/>already in the design?<br/>✅ yes · ❌ no · ❓ unsure"]
+    C --> D{"Any ❌?"}
+    D -->|yes| E["👩‍💻 Engineer updates<br/>the design and pushes"]
+    E -->|"push re-runs it"| B
+    D -->|no| F["🛡️ Security reviewer comments,<br/>checks every ❓"]
+    F -->|"reviewer adds label<br/>🟢 threat-model-approved"| G["👍 Tech lead approves the PR"]
+    G --> H["✅ Merged: ready to code"]
 ```
+
+**Two models, two jobs.** The LLM (`gpt-5.4-mini`) writes the threats. **Jev**, TypeSafe AI's decision
+model, judges whether each fix is already in the design and returns a probability. The model that wrote
+a threat never grades it: when it did, it marked missing fixes as covered. Jev is fast (under a second)
+and cheap (about $0.00004 per threat model), and anything it is unsure about goes to the reviewer.
+
+**Code checks the model.** Code reads the design's table of boundary-crossing flows and checks that
+every one appears in the threat model. If one is missing, it retries once, then says "Not analysed"
+rather than hiding it. Each revision also gets the previous threat model and the reviewer's comments.
 
 **The two labels, on the design PR:**
 

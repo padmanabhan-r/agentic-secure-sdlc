@@ -27,6 +27,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
 
+import requests
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
@@ -42,12 +43,10 @@ class Threat(BaseModel):
     stride: Literal["S", "T", "R", "I", "D", "E"]
     threat: str = Field(description="A concrete attack on this flow, one short sentence.")
     fix: str = Field(description="A concrete mitigation, one short sentence.")
-    covered: bool = Field(description="True only if the design's decisions already contain this fix.")
 
 
 class ThreatModel(BaseModel):
     threats: list[Threat] = Field(description="Only flows that cross a trust boundary. At most 3 per flow, worst first.")
-    design_changes: list[str] = Field(description="Up to 3 changes the design must make before coding. Empty if none.")
 
 
 SYSTEM = """You are a product security engineer on Rupi-yeah, an expense reimbursement app.
@@ -61,8 +60,6 @@ Method:
 - Look only at data flows that cross a trust boundary.
 - For each, ask the six STRIDE questions and keep the threats that are real for this flow.
 - Each threat must be specific to this design, and each fix must be something an engineer can build.
-- Mark covered=true only if one of the design's decisions already contains the fix.
-- design_changes: the uncovered fixes that matter most, phrased as changes to the design.
 Plain words, no jargon."""
 
 LETTER = {"S": "Spoofing", "T": "Tampering", "R": "Repudiation", "I": "Info disclosure", "D": "Denial of service", "E": "Elevation of privilege"}
@@ -132,24 +129,76 @@ def threat_model(requirement: str, design: str, past: str = "") -> tuple[ThreatM
     return tm, missing
 
 
-def render(tm: ThreatModel, paths: list[str], missing: list[str] | None = None) -> str:
+JEV_URL = "https://openrouter.ai/api/v1/systemone"
+JEV_MODEL = "~typesafe/jev-latest"
+COVERED, NOT_COVERED = 0.8, 0.2
+
+
+def judge_coverage(threats: list[Threat], design: str) -> list[float | None]:
+    """Ask Jev, a separate decision model, whether each fix is already in the design.
+
+    The LLM that wrote the threats does not grade them: it marked fixes as covered
+    when they were not. Jev answers one yes/no question per fix, with a probability.
+    Returns None for every threat if Jev is unavailable, so nothing is marked covered
+    by default.
+    """
+    key = os.environ.get("OPENROUTER_API_KEY")
+    if not key or not threats:
+        return [None] * len(threats)
+    decisions = design[design.index("## Key decisions"):] if "## Key decisions" in design else design
+    questions = {
+        f"t{i}": {"type": "noul", "instructions": f"Do the design decisions already contain this fix? Fix: {t.fix}"}
+        for i, t in enumerate(threats)
+    }
+    try:
+        r = requests.post(
+            JEV_URL,
+            headers={"Authorization": f"Bearer {key}"},
+            json={"model": JEV_MODEL, "state": {"design_decisions": decisions}, "questions": questions},
+            timeout=60,
+        )
+        r.raise_for_status()
+        answers = r.json()["answers"]
+        return [answers.get(f"t{i}", {}).get("noul") for i in range(len(threats))]
+    except (requests.RequestException, KeyError, ValueError) as err:
+        print(f"Jev unavailable: {err}")
+        return [None] * len(threats)
+
+
+def verdict(p: float | None) -> str:
+    if p is None:
+        return "❓ not judged"
+    if p >= COVERED:
+        return f"✅ {p:.2f}"
+    if p <= NOT_COVERED:
+        return f"❌ {p:.2f}"
+    return f"❓ {p:.2f}"
+
+
+def render(tm: ThreatModel, paths: list[str], missing: list[str] | None = None, design: str = "") -> str:
     rows = sorted(tm.threats, key=lambda t: (t.flow, "STRIDE".index(t.stride)))
-    open_count = sum(not t.covered for t in rows)
+    marks = [verdict(p) for p in judge_coverage(rows, design)]
+    gaps = [t for t, m in zip(rows, marks) if m.startswith("❌")]
+    unsure = [t for t, m in zip(rows, marks) if m.startswith("❓")]
     lines = [
         MARKER,
         "## Threat model (STRIDE, advisory)",
         "",
-        f"Design: {', '.join(f'`{p}`' for p in paths)} · {len(rows)} threats · **{open_count} not covered by the design**",
+        f"Design: {', '.join(f'`{p}`' for p in paths)} · {len(rows)} threats · **{len(gaps)} not in the design** · {len(unsure)} for the reviewer to check",
         "",
-        "| Flow | STRIDE | Threat | Fix | In design? |",
+        "| Flow | STRIDE | Threat | Fix | In design? (Jev) |",
         "|---|---|---|---|---|",
-        *[f"| {t.flow} | {t.stride} · {LETTER[t.stride]} | {t.threat} | {t.fix} | {'✅' if t.covered else '❌'} |" for t in rows],
+        *[f"| {t.flow} | {t.stride} · {LETTER[t.stride]} | {t.threat} | {t.fix} | {m} |" for t, m in zip(rows, marks)],
     ]
     if missing:
         lines += ["", f"⚠️ **Not analysed: {', '.join(missing)}.** These flows cross a trust boundary; the reviewer must check them by hand."]
-    if tm.design_changes:
-        lines += ["", "**Change the design before coding**", *[f"- {c}" for c in tm.design_changes[:3]]]
-    lines += ["", f"<sub>`{MODEL}` · advisory: a security reviewer comments, then adds `{APPROVED}`.</sub>"]
+    if gaps:
+        lines += ["", "**Change the design before coding**", *[f"- {t.flow}: {t.fix}" for t in gaps]]
+    lines += [
+        "",
+        f"<sub>Threats: `{MODEL}` · In design?: Jev (`{JEV_MODEL}`), p(fix is in the design): "
+        f"✅ ≥ {COVERED}, ❌ ≤ {NOT_COVERED}, ❓ in between · advisory: a security reviewer comments, then adds `{APPROVED}`.</sub>",
+    ]
     return "\n".join(lines)
 
 
@@ -178,7 +227,7 @@ def run(repo: str, number: int, reason: str):
         comment(repo, number, f"No design doc under `docs/design/` in this PR, so there is nothing to threat-model.")
         return
     tm, missing = threat_model(requirement, design, history(repo, number))
-    post(repo, number, render(tm, paths, missing), reason)
+    post(repo, number, render(tm, paths, missing, design), reason)
     print(f"Posted threat model on #{number}")
 
 
@@ -265,7 +314,7 @@ def main():
         requirement, design, paths = pr_inputs(repo, number)
         print("boundary flows:", boundary_flows(design))
         tm, missing = threat_model(requirement, design, history(repo, number))
-        print(render(tm, paths, missing))
+        print(render(tm, paths, missing, design))
         return
     handle(json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text()), repo)
 
