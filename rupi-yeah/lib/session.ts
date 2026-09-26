@@ -15,12 +15,15 @@ export const SANDBOX_COOKIE = "ry_sandbox";
 export const CSRF_COOKIE = "ry_csrf";
 export const DEFAULT_USER = "ravi";
 
+/** Signed-in sessions expire after 30 idle minutes; every request slides the window (see proxy.ts). */
+export const SESSION_IDLE_SECONDS = 30 * 60;
+
 export const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict" as const,
   path: "/",
-  maxAge: 60 * 60 * 24 * 7,
+  maxAge: SESSION_IDLE_SECONDS,
 };
 
 export async function session(): Promise<{ user: User; sandbox: string; csrf: string }> {
