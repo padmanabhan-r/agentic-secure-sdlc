@@ -126,8 +126,8 @@ TOOLS = [
 
 class Evidence(BaseModel):
     path: str
-    start: int
-    end: int
+    start: int = Field(description="First line of the exact check.")
+    end: int = Field(description="Last line of the exact check. At most 20 lines after start.")
 
 
 class Finding(BaseModel):
@@ -145,7 +145,8 @@ SYSTEM = """You audit whether a pull request's code enforces an approved securit
 
 You get a checklist of design decisions (D…) and security rules (R…). For EVERY item, use the tools
 to find the code that enforces it, then report:
-- implemented: give file and line ranges of the enforcing code (server-side logic, not comments or UI text);
+- implemented: give file and TIGHT line ranges (20 lines at most) around the exact statements that enforce it
+  (server-side logic, not comments or UI text). Up to 3 ranges; prefer the check itself over the whole function;
 - not_implemented: the product should do this but the code does not;
 - not_applicable: the item is outside this codebase (for example an external system), with the reason.
 
@@ -195,7 +196,8 @@ def judge(code: Code, items: list[dict], report: Report) -> dict[str, float | No
         if not f or f.status != "implemented" or not f.evidence:
             continue
         try:
-            snippet = "\n\n".join(f"{e.path}\n{code.lines(e.path, e.start, e.end)}" for e in f.evidence[:3])
+            # Jev judges the check itself: at most 25 lines per range, however wide the agent's citation.
+            snippet = "\n\n".join(f"{e.path}\n{code.lines(e.path, e.start, min(e.end, e.start + 24))}" for e in f.evidence[:3])
         except KeyError:
             continue
         state[item["id"]] = snippet
