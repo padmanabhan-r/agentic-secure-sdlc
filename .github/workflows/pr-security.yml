@@ -28,13 +28,15 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install semgrep==1.178.*
-      - name: Semgrep, public rules plus our design-decision rules
+      - name: Semgrep on the app, public rules plus our design-decision rules
+        if: hashFiles('rupi-yeah/package.json') != ''
         run: |
           semgrep scan --metrics off --error \
             --config security/semgrep/rupi-yeah.yml \
             --config p/typescript --config p/react --config p/owasp-top-ten \
             rupi-yeah/app rupi-yeah/components rupi-yeah/lib rupi-yeah/proxy.ts
-          semgrep scan --metrics off --error --config p/python --config p/owasp-top-ten agents
+      - name: Semgrep on the agents
+        run: semgrep scan --metrics off --error --config p/python --config p/owasp-top-ten agents
 
   secrets:
     name: secrets
@@ -62,6 +64,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: npm audit (production dependencies, high and above)
+        if: hashFiles('rupi-yeah/package.json') != ''
         working-directory: rupi-yeah
         run: npm audit --omit=dev --audit-level=high
       - name: pip-audit (agent dependencies)
@@ -71,18 +74,31 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    defaults:
-      run:
-        working-directory: rupi-yeah
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Does this branch contain the app?
+        id: app
+        run: echo "present=$([ -f rupi-yeah/package.json ] && echo yes || echo no)" >> "$GITHUB_OUTPUT"
+      - if: steps.app.outputs.present == 'no'
+        run: echo "No rupi-yeah/ app in this branch, nothing to build."
+      - if: steps.app.outputs.present == 'yes'
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: rupi-yeah/package-lock.json
-      - run: npm ci
-      - run: npx next typegen
-      - run: npx tsc --noEmit
-      - run: npx eslint .
-      - run: npx next build
+      - if: steps.app.outputs.present == 'yes'
+        working-directory: rupi-yeah
+        run: npm ci
+      - if: steps.app.outputs.present == 'yes'
+        working-directory: rupi-yeah
+        run: npx next typegen
+      - if: steps.app.outputs.present == 'yes'
+        working-directory: rupi-yeah
+        run: npx tsc --noEmit
+      - if: steps.app.outputs.present == 'yes'
+        working-directory: rupi-yeah
+        run: npx eslint .
+      - if: steps.app.outputs.present == 'yes'
+        working-directory: rupi-yeah
+        run: npx next build
