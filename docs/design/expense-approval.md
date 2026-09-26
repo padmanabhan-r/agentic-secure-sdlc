@@ -62,8 +62,9 @@ flowchart LR
    self-approval, pending status only, the 1,000 USD second-approver rule. The web app only hides buttons.
 2. **The caller's identity comes from the session token, never from the request body.** C2 ignores
    any user ID the browser sends.
-3. **Receipts are never served through C2.** C2 hands out a link that expires in 5 minutes and is
-   issued only to someone allowed to see that claim.
+3. **Receipts are never served through C2.** C2 hands out a link only to someone allowed to see that
+   claim. The link is **single-use**, expires in **5 minutes**, and is bound to **that viewer's session**:
+   opened by anyone else, or a second time, it fails. *(Threat model F5-I)*
 4. **The decision and its audit record are written in one transaction.** A decision without an audit
    record cannot exist.
 5. **Only C2 can reach C7,** over mutual TLS, and only for claims in "Ready for reimbursement".
@@ -74,3 +75,9 @@ flowchart LR
 8. **Every approve and reject request carries an anti-CSRF token** bound to the session, and C2 rejects
    any request without a valid one. A page on another site cannot submit a decision on the manager's
    behalf. *(Threat model F2-S)*
+9. **Manager comments are plain text.** C2 limits them to 500 characters and stores them as-is; the web
+   app always renders them as text, never as HTML, so a comment cannot run script in another user's
+   browser. *(Threat model F2-T)*
+10. **Payouts are built from the database, not from the request.** At payout time C2 reads the amount and
+    bank account from the approved, locked claim record in C4, signs the payout message, and C7 rejects
+    unsigned or altered messages. *(Threat model F7-T)*
