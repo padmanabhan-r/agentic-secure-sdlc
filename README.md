@@ -18,18 +18,29 @@ expense claims, their managers approve them, and approved claims are reimbursed.
 | Engineer | not yet | Builds the feature once the requirement is approved. |
 | Employee and Manager | test data | The product's users, at the customer company. They appear as sample users once there is code. |
 
-## The requirements flow
+## Stage 1: the requirements flow
 
-| Event | What happens |
-|---|---|
-| PM adds `needs-security-review` | The agent drafts security criteria as a comment |
-| PM edits the issue body while it is under review | The agent re-drafts |
-| Security reviewer adds `security-approved` | Approved. Development may start; the agent stops. |
-| Anyone else adds `security-approved` | The label is removed again |
-| Issue body edited after approval | Approval is reset and the agent re-drafts |
-| Issue body edited by a non-collaborator | Approval is still reset, but the agent does not re-run until a collaborator re-adds `needs-security-review` |
+```mermaid
+flowchart TD
+    A["📝 PM writes the requirement<br/>(GitHub issue)"] -->|"PM adds label<br/>🔴 needs-security-review"| B["🤖 Agent reads the requirement<br/>+ context model"]
+    B --> C["🤖 Agent posts a security review<br/>rules + questions"]
+    C --> D{"Questions<br/>for the PM?"}
+    D -->|yes| E["📝 PM answers by<br/>editing the issue"]
+    E -->|"edit re-runs the agent"| B
+    D -->|no| F["🛡️ Security reviewer checks the review"]
+    F -->|"reviewer adds label<br/>🟢 security-approved"| G["✅ Ready to build"]
+    G -.->|"requirement edited later:<br/>approval resets to 🔴"| B
+```
 
-Comments never trigger the agent, and it never reads them.
+**The two labels drive everything:**
+
+| Label | Who adds it | What it triggers |
+|---|---|---|
+| 🔴 `needs-security-review` | PM | The agent reviews the requirement. While it is on, every edit to the issue re-runs the agent. |
+| 🟢 `security-approved` | Security reviewer only | Sign-off. The agent stops. If anyone else adds it, it is removed. |
+
+Comments never trigger the agent, and it never reads them. An edit by someone who is not a collaborator
+still resets the approval, but does not re-run the agent.
 
 ## What is where
 
