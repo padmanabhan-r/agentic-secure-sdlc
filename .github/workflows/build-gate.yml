@@ -1,0 +1,34 @@
+name: Build gate
+
+# The status check `security/build-gate`: a PR that changes product code (rupi-yeah/) is red
+# until its requirement is security-approved and its design is threat-model-approved and merged.
+# A ruleset on main requires it.
+#
+# pull_request_target runs from main, so it also works for PRs from forks. That is safe only
+# because the PR's code is never checked out or run: the gate reads metadata through the API.
+on:
+  pull_request_target:
+    types: [opened, reopened, edited, synchronize]
+
+permissions:
+  contents: read
+  statuses: write
+  pull-requests: read
+  issues: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests==2.32.*
+      - name: Are the requirement and design approved?
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python agents/gate.py ${{ github.event.pull_request.number }}

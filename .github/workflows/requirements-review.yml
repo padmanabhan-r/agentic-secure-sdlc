@@ -4,21 +4,24 @@ name: Security requirements review
 # anyone can comment, which would let them spend the LLM budget or inject instructions.
 on:
   issues:
-    types: [labeled, edited]
+    types: [labeled, unlabeled, edited]
 
 permissions:
   contents: read
   issues: write
+  statuses: write        # refresh the build gate on linked code PRs
+  pull-requests: read
 
 concurrency:
   group: requirements-review-${{ github.event.issue.number }}
-  cancel-in-progress: true
+  cancel-in-progress: false   # queue, so a label change never cuts a review short
 
 jobs:
   review:
     if: >-
       (github.event.action == 'labeled' &&
         (github.event.label.name == 'needs-security-review' || github.event.label.name == 'security-approved')) ||
+      (github.event.action == 'unlabeled' && github.event.label.name == 'security-approved') ||
       (github.event.action == 'edited' && github.event.changes.body)
     runs-on: ubuntu-latest
     timeout-minutes: 5

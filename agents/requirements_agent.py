@@ -183,6 +183,20 @@ def run_review(repo: str, issue: dict, reason: str):
 
 
 def handle(event_name: str, event: dict, repo: str):
+    """Run the flow, then re-check every open code PR that closes this requirement.
+
+    Label changes this flow makes with GITHUB_TOKEN do not trigger other workflows,
+    so the build gate is refreshed here directly.
+    """
+    try:
+        _handle(event_name, event, repo)
+    finally:
+        from gate import refresh_prs_for_issue
+
+        refresh_prs_for_issue(repo, event["issue"]["number"])
+
+
+def _handle(event_name: str, event: dict, repo: str):
     issue = event["issue"]
     number = issue["number"]
     labels = {l["name"] for l in issue["labels"]}
