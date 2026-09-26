@@ -7,7 +7,7 @@ following the order a feature takes: requirement, design, code, CI, release, pro
 
 | Built | What it does | JD line |
 |---|---|---|
-| **Security context model** | One YAML file of the product's security facts: data sensitivity, roles, rules, limits. Every step reads it. | "Own the product security context model" |
+| **Security context model** | One YAML file of the product's security facts: data sensitivity, roles, rules, limits. Every step reads it. Changing it is a security change: the ₹50,000 second-approver limit went through a design PR, a threat model and sign-off (PR #4). | "Own the product security context model" |
 | **Stage 1: requirement review** | An LLM step turns a requirement (GitHub issue) into security acceptance criteria. A human reviewer signs off. | requirements, human-review requirements |
 | **Stage 2: threat model** | An LLM writes STRIDE threats for every boundary-crossing flow in the design; **Jev** judges whether each fix is already in the design. A human reviewer signs off. | threat modeling, validate agent outputs |
 | **Label-driven flow** | Labels trigger each step; only collaborators can add them; comments never trigger anything. | human-review points, escalation |
