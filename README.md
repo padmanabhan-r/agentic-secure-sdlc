@@ -3,6 +3,8 @@
 A hands-on lab for an **agentic security workflow across the SDLC**, built one stage at a time and
 following the order a feature takes: requirement, design, code, CI, release, production.
 
+**Live demo: [rupi-yeah.netlify.app](https://rupi-yeah.netlify.app)** · sample data only · every visitor gets a private sandbox (Reset demo starts over).
+
 ## What is built so far
 
 | Built | What it does | JD line |
