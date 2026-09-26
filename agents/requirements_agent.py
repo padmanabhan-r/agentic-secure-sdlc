@@ -19,7 +19,9 @@ The flow, driven by GitHub issue events:
 """
 import json
 import os
+import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
@@ -115,14 +117,22 @@ def render(r: Review) -> str:
     return "\n".join(lines)
 
 
-def post_review(repo: str, number: int, text: str):
-    """Update the agent's earlier comment if there is one, so re-runs don't pile up comments."""
+def post_review(repo: str, number: int, text: str, reason: str):
+    """Keep exactly one review, always the newest comment in the thread.
+
+    The old review is deleted and the new one posted at the bottom, so the latest
+    review is where people look, and the revision number shows it changed.
+    """
     comments = gh("GET", f"/repos/{repo}/issues/{number}/comments", params={"per_page": 100})
     mine = next((c for c in comments if MARKER in c["body"]), None)
+    revision = 1
     if mine:
-        gh("PATCH", f"/repos/{repo}/issues/comments/{mine['id']}", json={"body": text})
-    else:
-        comment(repo, number, text)
+        found = re.search(r"Revision (\d+)", mine["body"])
+        revision = int(found.group(1)) + 1 if found else 2
+        gh("DELETE", f"/repos/{repo}/issues/comments/{mine['id']}")
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    header = f"**Revision {revision}** · {reason} · {stamp}"
+    comment(repo, number, text.replace(MARKER, f"{MARKER}\n{header}", 1))
 
 
 def comment(repo: str, number: int, text: str):
@@ -143,8 +153,8 @@ def can_write(repo: str, user: str) -> bool:
     return perm in ("admin", "maintain", "write")
 
 
-def run_review(repo: str, issue: dict):
-    post_review(repo, issue["number"], render(review(issue["title"], issue["body"] or "")))
+def run_review(repo: str, issue: dict, reason: str):
+    post_review(repo, issue["number"], render(review(issue["title"], issue["body"] or "")), reason)
     print(f"Posted review on #{issue['number']}")
 
 
@@ -164,7 +174,7 @@ def handle(event_name: str, event: dict, repo: str):
             if APPROVED in labels:
                 print("Already approved; not re-reviewing.")
                 return
-            run_review(repo, issue)
+            run_review(repo, issue, f"review requested by @{actor}")
         elif added == APPROVED:
             if actor not in reviewers:
                 remove_label(repo, number, APPROVED)
@@ -184,7 +194,7 @@ def handle(event_name: str, event: dict, repo: str):
             comment(repo, number, f"The requirement changed after approval (edited by @{actor}), so the security approval is reset.")
         # Only a collaborator's edit spends the LLM budget and puts new text in front of the agent.
         if can_write(repo, actor):
-            run_review(repo, issue)
+            run_review(repo, issue, f"requirement edited by @{actor}")
         else:
             comment(
                 repo,
